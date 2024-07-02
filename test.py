@@ -21,7 +21,7 @@ root.resizable(False, False)  # Disable window resizing
 #root.overrideredirect(True) 
 root.iconbitmap("myIcon.ico")
 
-ctk.set_appearance_mode("light")
+ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 bg = PhotoImage(file = "background.png")
