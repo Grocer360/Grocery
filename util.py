@@ -1,6 +1,8 @@
+# util.py
+
+import customtkinter as ctk
 import os
 import pickle
-import tkinter as tk
 from tkinter import messagebox
 import face_recognition
 
@@ -8,95 +10,50 @@ import face_recognition
 
 def get_button(window, text, color, command, fg='white', font=('Helvetica bold', 20), height=1, width=20):
     """
-    Create a Tkinter button with the specified parameters.
-
-    Args:
-    window (tk.Tk or tk.Toplevel): Parent window.
-    text (str): Button text.
-    color (str): Background color of the button.
-    command (function): Function to call when the button is pressed.
-    fg (str, optional): Foreground color of the button text. Default is 'white'.
-    font (tuple, optional): Font style and size. Default is ('Helvetica bold', 20).
-    height (int, optional): Height of the button. Default is 2.
-    width (int, optional): Width of the button. Default is 20.
-
-    Returns:
-    tk.Button: Configured button widget.
+    Create a CustomTkinter button with the specified parameters.
     """
-    button = tk.Button(
+    button = ctk.CTkButton(
         window,
         text=text,
-        activebackground="black",
-        activeforeground="white",
-        fg=fg,
-        bg=color,
+        fg_color=color,
         command=command,
-        height=height,
-        width=width,
-        font=font
+        height=height * 10,  # Adjusted height for CTkButton
+        width=width * 10,    # Adjusted width for CTkButton
+        text_color=fg,
+        font=ctk.CTkFont(*font)  # Convert to customtkinter font
     )
     return button
 
-def get_img_label(window, row=0, column=0):
+def get_img_label(window, width, height, row=0, column=0):
     """
-    Create a Tkinter label to display images.
-
-    Args:
-    window (tk.Tk or tk.Toplevel): Parent window.
-    row (int, optional): Row position for grid layout. Default is 0.
-    column (int, optional): Column position for grid layout. Default is 0.
-
-    Returns:
-    tk.Label: Configured label widget.
+    Create a CustomTkinter label to display images with specified width and height.
     """
-    label = tk.Label(window)
+    label = ctk.CTkLabel(window, width=width, height=height)
     label.grid(row=row, column=column)
     return label
 
 def get_text_label(window, text, font=("sans-serif", 21), justify="left"):
     """
-    Create a Tkinter label for displaying text.
-
-    Args:
-    window (tk.Tk or tk.Toplevel): Parent window.
-    text (str): Text to display in the label.
-    font (tuple, optional): Font style and size. Default is ("sans-serif", 21).
-    justify (str, optional): Justification of the text. Default is "left".
-
-    Returns:
-    tk.Label: Configured label widget.
+    Create a CustomTkinter label for displaying text.
     """
-    label = tk.Label(window, text=text)
-    label.config(font=font, justify=justify)
+    label = ctk.CTkLabel(window, text=text, font=ctk.CTkFont(*font))
     return label
 
 def get_entry_text(window, height=2, width=15, font=("Arial", 32)):
     """
-    Create a Tkinter text entry widget.
-
-    Args:
-    window (tk.Tk or tk.Toplevel): Parent window.
-    height (int, optional): Height of the text entry. Default is 2.
-    width (int, optional): Width of the text entry. Default is 15.
-    font (tuple, optional): Font style and size. Default is ("Arial", 32).
-
-    Returns:
-    tk.Text: Configured text entry widget.
+    Create a CustomTkinter entry widget.
     """
-    inputtxt = tk.Text(window,
-                       height=height,
-                       width=width,
-                       font=font)
+    inputtxt = ctk.CTkTextbox(
+        window,
+        height=height * 20,  # Adjusted height for CTkTextbox
+        width=width * 20,    # Adjusted width for CTkTextbox
+        font=ctk.CTkFont(*font)
+    )
     return inputtxt
 
 def msg_box(title, description, msg_type='info'):
     """
     Display a message box with the specified title and description.
-
-    Args:
-    title (str): Title of the message box.
-    description (str): Message to display.
-    msg_type (str, optional): Type of the message box. Can be 'info', 'warning', or 'error'. Default is 'info'.
     """
     if msg_type == 'info':
         messagebox.showinfo(title, description)
@@ -110,13 +67,6 @@ def msg_box(title, description, msg_type='info'):
 def load_embeddings(db_path):
     """
     Load face embeddings from a specified directory.
-
-    Args:
-    db_path (str): Path to the directory containing embeddings files.
-
-    Returns:
-    list: List of embeddings.
-    list: List of corresponding user names.
     """
     embeddings_list = []
     names_list = []
@@ -134,13 +84,6 @@ def load_embeddings(db_path):
 def recognize(img, db_path):
     """
     Recognize a face from an image against a database of embeddings.
-
-    Args:
-    img (numpy.ndarray): Image containing the face to recognize.
-    db_path (str): Path to the directory containing embeddings files.
-
-    Returns:
-    str: The recognized user name or 'unknown_person' if no match is found.
     """
     embeddings_unknown = face_recognition.face_encodings(img)
     if len(embeddings_unknown) == 0:
