@@ -13,6 +13,9 @@ import json
 import uuid
 import face_recognition
 import pickle
+import re
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 # Config Class to handle configuration
 class Config:
@@ -201,33 +204,137 @@ class App:
             print(f"Log entry added: {log_entry}")
 
     def register_new_user(self):
-
+         # Create a new window for registering a new user
         self.register_new_user_window = ctk.CTkToplevel(self.main_window)
-        self.register_new_user_window.geometry("400x200")
+        self.register_new_user_window.geometry("900x600")
         self.register_new_user_window.title("Register New User")
 
+        # Configure grid layout for the registration window
+        self.register_new_user_window.grid_rowconfigure(0, weight=1)
+        self.register_new_user_window.grid_rowconfigure(1, weight=1)
+        self.register_new_user_window.grid_columnconfigure(0, weight=1)
+        self.register_new_user_window.grid_columnconfigure(1, weight=1)
+
+        # Label for the name input
         name_label = util.get_text_label(self.register_new_user_window, "Enter Name:")
-        name_label.pack(pady=10)
+        name_label.grid(row=0, column=0, padx=10, pady=10, sticky='e')
 
-        name_entry = ctk.CTkEntry(self.register_new_user_window)
-        name_entry.pack(pady=10)
+        # Entry widget for the name input
+        self.name_entry = ctk.CTkEntry(self.register_new_user_window)
+        self.name_entry.grid(row=0, column=1, padx=10, pady=0, sticky='w')
 
+        # Webcam label to display the camera feed
+        self.reg_webcam_label = util.get_img_label_grid(self.register_new_user_window, width=700, height=500)
+        self.reg_webcam_label.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
+
+        # Capture button to capture and save the face
         capture_button = util.get_button(self.register_new_user_window, "Capture Face", "blue",
-                                         lambda: self.capture_and_save_face(name_entry.get()))
-        capture_button.pack(pady=10)
+                                        lambda: self.capture_and_save_face())
+        capture_button.grid(row=2, column=0, padx=10, pady=10, sticky='e')
 
+        # Close button to close the registration window
         close_button = util.get_button(self.register_new_user_window, "Close", "red",
-                                       self.register_new_user_window.destroy)
-        close_button.pack(pady=10)
+                                    self.register_new_user_window.destroy)
+        close_button.grid(row=2, column=1, padx=10, pady=10, sticky='w')
 
-    def capture_and_save_face(self, name):
+        # Start the camera and display the feed in the registration window
+        self.start_camera()
+        self.process_webcam_registration()  # Start processing the webcam for the registration window
+
+
+    def is_valid_username(self, username):
+            """
+            Validate the username.
+            Username should only contain alphanumeric characters and spaces, no special characters.
+            """
+            valid_username_pattern = re.compile(r'^[A-Za-z0-9 ]+$')
+            return bool(valid_username_pattern.match(username))
+
+    def is_unique_username(self, username):
         """
-            Face Detection: The code checks if a face is detected in the most recently captured image.
-            Face Embedding Extraction: It uses face_recognition.face_encodings to extract the face embeddings from the detected face.
-            Saving the Embeddings: It uses pickle to serialize the face embeddings and save them to a file (with a .pickle extension).
-            Loading for Future Use: Later, when you need to recognize a face, 
-            you can load these embeddings using pickle.load and compare them with the embeddings of a newly captured face.
+        Check if the username is unique in the database directory.
         """
+        existing_files = os.listdir(self.db_dir)
+        existing_usernames = [os.path.splitext(file)[0] for file in existing_files]
+        return username not in existing_usernames
+
+
+
+# Configure logging
+
+    def capture_and_save_face(self):
+        """
+        Capture the current frame from the webcam, validate the username, and save the face image and embeddings.
+        """
+        name = self.name_entry.get().strip()
+        logging.debug(f"Captured name: {name}")
+
+        # Validate the username
+        if not name:
+            util.msg_box("Error", "Name cannot be empty!")
+            logging.error("Name is empty")
+            return
+
+        if not self.is_valid_username(name):
+            util.msg_box("Error", "Invalid name! Use only letters, numbers, and spaces.")
+            logging.error(f"Invalid name: {name}")
+            return
+
+        if not self.is_unique_username(name):
+            util.msg_box("Error", "This username already exists. Please choose a different one.")
+            logging.error(f"Username already exists: {name}")
+            return
+
+        if self.most_recent_capture_arr is None:
+            util.msg_box("Error", "No image captured!")
+            logging.error("No image captured")
+            return
+
+        logging.debug("Processing face detection")
+        faces = self.detect_face(self.most_recent_capture_arr)
+        if len(faces) == 0:
+            util.msg_box("Error", "No faces detected!")
+            logging.error("No faces detected")
+            return
+
+        face_img_path = os.path.join(self.db_dir, f"{name}.jpg")
+        cv2.imwrite(face_img_path, self.most_recent_capture_arr)
+        logging.debug(f"Saved face image to {face_img_path}")
+
+        face_embeddings = face_recognition.face_encodings(self.most_recent_capture_arr)
+        if face_embeddings:
+            embedding_path = os.path.join(self.db_dir, f"{name}.pickle")
+            with open(embedding_path, 'wb') as f:
+                pickle.dump(face_embeddings[0], f)
+            logging.debug(f"Saved face embeddings to {embedding_path}")
+
+            util.msg_box("Success", f"User {name} registered successfully!")
+        else:
+            util.msg_box("Error", "Failed to encode face. Try again!")
+            logging.error("Failed to encode face")
+
+    def process_webcam_registration(self):
+        """
+        Continuously capture frames from the webcam and update the registration window.
+        """
+        if self.cap:
+            ret, frame = self.cap.read()
+            if ret:
+                # Convert the frame to RGB (OpenCV uses BGR by default)
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # Convert the image to a PhotoImage
+                img = Image.fromarray(frame)
+                imgtk = ImageTk.PhotoImage(image=img)
+                # Update the webcam label with the new image
+                self.reg_webcam_label.imgtk = imgtk
+                self.reg_webcam_label.configure(image=imgtk)
+            self.reg_webcam_label.after(10, self.process_webcam_registration)
+            
+    def capture_and_save_face(self):
+        """
+        Capture the current frame from the webcam, detect the face, and save it along with the embeddings.
+        """
+        name = self.name_entry.get().strip()  # Get the name from the entry widget
         if not name:
             util.msg_box("Error", "Name cannot be empty!")
             return
@@ -241,11 +348,11 @@ class App:
             util.msg_box("Error", "No faces detected!")
             return
 
-        # Save the captured face image and embeddings
+        # Save the captured face image
         face_img_path = os.path.join(self.db_dir, f"{name}.jpg")
         cv2.imwrite(face_img_path, self.most_recent_capture_arr)
 
-        # Extract and save embeddings
+        # Extract and save face embeddings
         face_embeddings = face_recognition.face_encodings(self.most_recent_capture_arr)
         if face_embeddings:
             embedding_path = os.path.join(self.db_dir, f"{name}.pickle")
@@ -255,6 +362,7 @@ class App:
             util.msg_box("Success", f"User {name} registered successfully!")
         else:
             util.msg_box("Error", "Failed to encode face. Try again!")
+
 
     def manage_users(self):
 
@@ -281,6 +389,15 @@ class App:
                                        self.manage_users_window.destroy)
         close_button.pack(pady=10)
 
+    def delete_user(self, user_file):
+        user_path = os.path.join(self.db_dir, user_file)
+        if os.path.exists(user_path):
+            os.remove(user_path)
+            util.msg_box("Success", f"User {user_file} deleted successfully!")
+            self.manage_users_window.destroy()
+            self.manage_users()  # Refresh the manage users window
+            
+            
     def on_close_manage_window(self):
         """
         Handle the closing of the manage users window.
@@ -289,13 +406,6 @@ class App:
         self.manage_users_window = None
 
 
-    def delete_user(self, user_file):
-        user_path = os.path.join(self.db_dir, user_file)
-        if os.path.exists(user_path):
-            os.remove(user_path)
-            util.msg_box("Success", f"User {user_file} deleted successfully!")
-            self.manage_users_window.destroy()
-            self.manage_users()  # Refresh the manage users window
 
     def run(self):
         self.main_window.mainloop()

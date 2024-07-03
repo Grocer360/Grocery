@@ -24,12 +24,19 @@ def get_button(window, text, color, command, fg='white', font=('Helvetica bold',
     )
     return button
 
-def get_img_label(window, width, height, row=0, column=0):
+def get_img_label(window, width=700, height=500):
     """
     Create a CustomTkinter label to display images with specified width and height.
     """
     label = ctk.CTkLabel(window, width=width, height=height)
-    label.grid(row=row, column=column)
+    label.pack(pady=10)  # Use pack instead of grid
+    return label
+def get_img_label_grid(window, width, height):
+    """
+    Create a label for displaying images.
+    """
+    label = ctk.CTkLabel(window, width=width, height=height, text='')  # Create the label with specified width and height
+    label.grid(sticky='nsew')  # Use grid instead of pack and make it expand in all directions
     return label
 
 def get_text_label(window, text, font=("sans-serif", 21), justify="left"):
