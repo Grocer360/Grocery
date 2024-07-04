@@ -23,6 +23,19 @@ def get_button(window, text, color, command, fg='white', font=('Helvetica bold',
         font=ctk.CTkFont(*font)  # Convert to customtkinter font
     )
     return button
+# util.py
+
+def get_button_grid(parent, text, bg_color, command, fg="white", width=None, height=None):
+    button = ctk.CTkButton(
+        parent, 
+        text=text, 
+        fg_color=bg_color, 
+        text_color=fg, 
+        command=command,
+        width=width,  # Set width if provided
+        height=height  # Set height if provided
+    )
+    return button
 
 def get_img_label(window, width=700, height=500):
     """
@@ -35,7 +48,7 @@ def get_img_label_grid(window, width, height):
     """
     Create a label for displaying images.
     """
-    label = ctk.CTkLabel(window, width=width, height=height, text='')  # Create the label with specified width and height
+    label = ctk.CTkLabel(window, width=width, height=height)  # Create the label with specified width and height
     label.grid(sticky='nsew')  # Use grid instead of pack and make it expand in all directions
     return label
 

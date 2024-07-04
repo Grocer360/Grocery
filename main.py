@@ -91,14 +91,6 @@ class App:
             except Exception as e:
                 print(f"Error starting camera: {e}")
 
-    def start_camera(self):
-        if self.cap is None:
-            try:
-                self.cap = cv2.VideoCapture(self.config.get('camera_index', 0))  # Change the index if needed
-                self.process_webcam()
-            except Exception as e:
-                print(f"Error starting camera: {e}")
-
     def process_webcam(self):
         try:
             ret, frame = self.cap.read()
@@ -336,8 +328,9 @@ class App:
     def manage_users(self):
         # Create the manage users window
         self.manage_users_window = ctk.CTkToplevel(self.main_window)
-        self.manage_users_window.geometry("400x400")
+        self.manage_users_window.geometry("515x200")
         self.manage_users_window.title("Manage Users")
+        self.manage_users_window.resizable(False, False)
 
         # Reset window tracking variable when closed
         self.manage_users_window.protocol("WM_DELETE_WINDOW", self.on_close_manage_window)
@@ -355,51 +348,78 @@ class App:
             selected_user = ctk.StringVar(value=user_names[0])  # Default to the first user
 
             user_dropdown = ctk.CTkOptionMenu(self.manage_users_window, variable=selected_user, values=user_names)
-            user_dropdown.pack(pady=10)
+            user_dropdown.grid(row=0, column=1, columnspan=2, pady=10, padx=10, sticky="ew")
 
             # Add an entry field for the new name
             new_name_entry = ctk.CTkEntry(self.manage_users_window, placeholder_text="Enter new name")
-            new_name_entry.pack(pady=10)
+            new_name_entry.grid(row=1, column=1, columnspan=2, pady=10, padx=10, sticky="ew")
 
-            # Add an update name button
-            update_name_button = util.get_button(
+            # Define common padding and button size
+            button_padx = 5  # Padding between buttons
+            button_width = 100  # Button width in pixels
+            button_height = 30  # Button height in pixels
+
+            # Add the buttons and place them horizontally on the same row
+            update_name_button = util.get_button_grid(
                 self.manage_users_window, 
                 "Update Name", 
                 "blue", 
-                lambda: self.update_user_name(selected_user.get(), new_name_entry.get())
+                lambda: self.update_user_name(selected_user.get(), new_name_entry.get()),
+                fg="white",
+                width=button_width, 
+                height=button_height
             )
-            update_name_button.pack(pady=10)
+            update_name_button.grid(row=2, column=0, padx=button_padx, pady=10, sticky="ew")
 
-            # Add an update image button for capturing a new image
-            update_image_button = util.get_button(
+            update_image_button = util.get_button_grid(
                 self.manage_users_window, 
                 "Update Image (Capture New)", 
                 "green", 
-                lambda: self.start_capture_new_image(selected_user.get())
+                lambda: self.start_capture_new_image(selected_user.get()),
+                fg="white",
+                width=button_width, 
+                height=button_height
             )
-            update_image_button.pack(pady=10)
+            update_image_button.grid(row=2, column=1, padx=button_padx, pady=10, sticky="ew")
 
-            # Add a delete button
-            delete_button = util.get_button(
+            delete_button = util.get_button_grid(
                 self.manage_users_window, 
                 "Delete", 
                 "red", 
-                lambda: self.delete_user(selected_user.get())
+                lambda: self.delete_user(selected_user.get()),
+                fg="white",
+                width=button_width, 
+                height=button_height
             )
-            delete_button.pack(pady=10)
+            delete_button.grid(row=2, column=2, padx=button_padx, pady=10, sticky="ew")
+
+            close_button = util.get_button_grid(
+                self.manage_users_window, 
+                "Close", 
+                "gray", 
+                self.manage_users_window.destroy,
+                fg="white",
+                width=button_width, 
+                height=button_height
+            )
+            close_button.grid(row=2, column=3, padx=button_padx, pady=10, sticky="ew")
         else:
             # If no users are found, display a message
             no_users_label = util.get_text_label(self.manage_users_window, "No users found!")
-            no_users_label.pack(pady=20)
+            no_users_label.grid(row=0, column=0, columnspan=4, pady=20, padx=10, sticky="ew")
 
-        # Add a close button
-        close_button = util.get_button(
-            self.manage_users_window, 
-            "Close", 
-            "red", 
-            self.manage_users_window.destroy
-        )
-        close_button.pack(pady=10)
+            close_button = util.get_button_grid(
+                self.manage_users_window, 
+                "Close", 
+                "gray", 
+                self.manage_users_window.destroy,
+                fg="white",
+                width=button_width, 
+                height=button_height
+            )
+            close_button.grid(row=1, column=0, columnspan=4, padx=10, pady=10, sticky="ew")
+
+        self.main_window.wait_window(self.manage_users_window)
 
     def update_user_name(self, old_name, new_name):
         """
