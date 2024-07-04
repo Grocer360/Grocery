@@ -15,6 +15,9 @@ import face_recognition
 import pickle
 import re
 import logging
+import tkinter.filedialog as filedialog
+import shutil
+
 logging.basicConfig(level=logging.DEBUG)
 
 # Config Class to handle configuration
@@ -39,7 +42,7 @@ class App:
         self.config = Config()
         self.main_window = ctk.CTk()  # Use ctk.CTk() for the main window
         self.main_window.geometry(self.config.get('window_size', "1200x520+350+100"))
-        self.main_window.title("Face Attendance System")
+        self.main_window.title("Face ID Authentication System")
 
         # Grid configuration
         self.main_window.grid_rowconfigure(0, weight=1)
@@ -242,21 +245,6 @@ class App:
         self.process_webcam_registration()  # Start processing the webcam for the registration window
 
 
-    def is_valid_username(self, username):
-            """
-            Validate the username.
-            Username should only contain alphanumeric characters and spaces, no special characters.
-            """
-            valid_username_pattern = re.compile(r'^[A-Za-z0-9 ]+$')
-            return bool(valid_username_pattern.match(username))
-
-    def is_unique_username(self, username):
-        """
-        Check if the username is unique in the database directory.
-        """
-        existing_files = os.listdir(self.db_dir)
-        existing_usernames = [os.path.splitext(file)[0] for file in existing_files]
-        return username not in existing_usernames
 
 
 
@@ -313,6 +301,21 @@ class App:
             util.msg_box("Error", "Failed to encode face. Try again!")
             logging.error("Failed to encode face")
 
+    def is_valid_username(self, username):
+            """
+            Validate the username.
+            Username should only contain alphanumeric characters and spaces, no special characters.
+            """
+            valid_username_pattern = re.compile(r'^[A-Za-z0-9 ]+$')
+            return bool(valid_username_pattern.match(username))
+
+    def is_unique_username(self, username):
+        """
+        Check if the username is unique in the database directory.
+        """
+        existing_files = os.listdir(self.db_dir)
+        existing_usernames = [os.path.splitext(file)[0] for file in existing_files]
+        return username not in existing_usernames
     def process_webcam_registration(self):
         """
         Continuously capture frames from the webcam and update the registration window.
@@ -329,73 +332,274 @@ class App:
                 self.reg_webcam_label.imgtk = imgtk
                 self.reg_webcam_label.configure(image=imgtk)
             self.reg_webcam_label.after(10, self.process_webcam_registration)
-            
-    def capture_and_save_face(self):
-        """
-        Capture the current frame from the webcam, detect the face, and save it along with the embeddings.
-        """
-        name = self.name_entry.get().strip()  # Get the name from the entry widget
-        if not name:
-            util.msg_box("Error", "Name cannot be empty!")
-            return
-
-        if self.most_recent_capture_arr is None:
-            util.msg_box("Error", "No image captured!")
-            return
-
-        faces = self.detect_face(self.most_recent_capture_arr)
-        if len(faces) == 0:
-            util.msg_box("Error", "No faces detected!")
-            return
-
-        # Save the captured face image
-        face_img_path = os.path.join(self.db_dir, f"{name}.jpg")
-        cv2.imwrite(face_img_path, self.most_recent_capture_arr)
-
-        # Extract and save face embeddings
-        face_embeddings = face_recognition.face_encodings(self.most_recent_capture_arr)
-        if face_embeddings:
-            embedding_path = os.path.join(self.db_dir, f"{name}.pickle")
-            with open(embedding_path, 'wb') as f:
-                pickle.dump(face_embeddings[0], f)
-
-            util.msg_box("Success", f"User {name} registered successfully!")
-        else:
-            util.msg_box("Error", "Failed to encode face. Try again!")
-
 
     def manage_users(self):
-
+        # Create the manage users window
         self.manage_users_window = ctk.CTkToplevel(self.main_window)
-        self.manage_users_window.geometry("400x300")
+        self.manage_users_window.geometry("400x400")
         self.manage_users_window.title("Manage Users")
 
         # Reset window tracking variable when closed
         self.manage_users_window.protocol("WM_DELETE_WINDOW", self.on_close_manage_window)
 
-        # Display registered users and provide options to remove them
+        # Get registered users
         registered_users = sorted(os.listdir(self.db_dir))
+        
+        # Filter to only show .jpg files (assuming the users are stored as .jpg and .pickle)
+        image_files = [f for f in registered_users if f.endswith('.jpg')]
+        
+        # Extract user names from image files (remove the extension)
+        user_names = [os.path.splitext(f)[0] for f in image_files]
+        
+        if user_names:
+            selected_user = ctk.StringVar(value=user_names[0])  # Default to the first user
 
-        for user_file in registered_users:
-            user_name = os.path.splitext(user_file)[0]
-            user_label = util.get_text_label(self.manage_users_window, user_name)
-            user_label.pack(pady=5)
+            user_dropdown = ctk.CTkOptionMenu(self.manage_users_window, variable=selected_user, values=user_names)
+            user_dropdown.pack(pady=10)
 
-            delete_button = util.get_button(self.manage_users_window, "Delete", "red",
-                                            lambda user_file=user_file: self.delete_user(user_file))
-            delete_button.pack(pady=5)
+            # Add an entry field for the new name
+            new_name_entry = ctk.CTkEntry(self.manage_users_window, placeholder_text="Enter new name")
+            new_name_entry.pack(pady=10)
 
-        close_button = util.get_button(self.manage_users_window, "Close", "red",
-                                       self.manage_users_window.destroy)
+            # Add an update name button
+            update_name_button = util.get_button(
+                self.manage_users_window, 
+                "Update Name", 
+                "blue", 
+                lambda: self.update_user_name(selected_user.get(), new_name_entry.get())
+            )
+            update_name_button.pack(pady=10)
+
+            # Add an update image button for capturing a new image
+            update_image_button = util.get_button(
+                self.manage_users_window, 
+                "Update Image (Capture New)", 
+                "green", 
+                lambda: self.start_capture_new_image(selected_user.get())
+            )
+            update_image_button.pack(pady=10)
+
+            # Add a delete button
+            delete_button = util.get_button(
+                self.manage_users_window, 
+                "Delete", 
+                "red", 
+                lambda: self.delete_user(selected_user.get())
+            )
+            delete_button.pack(pady=10)
+        else:
+            # If no users are found, display a message
+            no_users_label = util.get_text_label(self.manage_users_window, "No users found!")
+            no_users_label.pack(pady=20)
+
+        # Add a close button
+        close_button = util.get_button(
+            self.manage_users_window, 
+            "Close", 
+            "red", 
+            self.manage_users_window.destroy
+        )
         close_button.pack(pady=10)
 
-    def delete_user(self, user_file):
-        user_path = os.path.join(self.db_dir, user_file)
-        if os.path.exists(user_path):
-            os.remove(user_path)
-            util.msg_box("Success", f"User {user_file} deleted successfully!")
-            self.manage_users_window.destroy()
-            self.manage_users()  # Refresh the manage users window
+    def update_user_name(self, old_name, new_name):
+        """
+        Update the user's name and rename their associated files.
+        """
+        if not new_name:
+            util.msg_box("Error", "New name cannot be empty!")
+            return
+
+        # Define the old and new file paths
+        old_image_file = os.path.join(self.db_dir, f"{old_name}.jpg")
+        new_image_file = os.path.join(self.db_dir, f"{new_name}.jpg")
+
+        old_encoding_file = os.path.join(self.db_dir, f"{old_name}.pickle")
+        new_encoding_file = os.path.join(self.db_dir, f"{new_name}.pickle")
+
+        try:
+            # Rename the image file
+            if os.path.exists(old_image_file):
+                os.rename(old_image_file, new_image_file)
+            else:
+                util.msg_box("Error", f"Image file for {old_name} not found!")
+
+            # Rename the encoding file
+            if os.path.exists(old_encoding_file):
+                os.rename(old_encoding_file, new_encoding_file)
+            else:
+                util.msg_box("Error", f"Encoding file for {old_name} not found!")
+
+            util.msg_box("Success", f"User {old_name} renamed to {new_name} successfully!")
+
+        except Exception as e:
+            util.msg_box("Error", f"An error occurred: {e}")
+
+        # Refresh the manage users window
+        self.manage_users_window.destroy()
+        self.manage_users()
+
+    def update_user_name(self, old_name, new_name):
+        """
+        Update the user's name and rename their associated files.
+        """
+        new_name = new_name.strip()
+
+        # Validate the new name
+        if not new_name:
+            util.msg_box("Error", "New name cannot be empty!")
+            return
+
+        if not self.is_valid_username(new_name):
+            util.msg_box("Error", "Invalid name! Use only letters, numbers, and spaces.")
+            return
+
+        if not self.is_unique_username(new_name):
+            util.msg_box("Error", "This username already exists. Please choose a different one.")
+            return
+
+        # Define the old and new file paths
+        old_image_file = os.path.join(self.db_dir, f"{old_name}.jpg")
+        new_image_file = os.path.join(self.db_dir, f"{new_name}.jpg")
+
+        old_encoding_file = os.path.join(self.db_dir, f"{old_name}.pickle")
+        new_encoding_file = os.path.join(self.db_dir, f"{new_name}.pickle")
+
+        try:
+            # Rename the image file
+            if os.path.exists(old_image_file):
+                os.rename(old_image_file, new_image_file)
+            else:
+                util.msg_box("Error", f"Image file for {old_name} not found!")
+                return
+
+            # Rename the encoding file
+            if os.path.exists(old_encoding_file):
+                os.rename(old_encoding_file, new_encoding_file)
+            else:
+                util.msg_box("Error", f"Encoding file for {old_name} not found!")
+                return
+
+            util.msg_box("Success", f"User {old_name} renamed to {new_name} successfully!")
+
+        except Exception as e:
+            util.msg_box("Error", f"An error occurred: {e}")
+
+        # Refresh the manage users window
+        self.manage_users_window.destroy()
+        self.manage_users()
+
+    def start_capture_new_image(self, user_name):
+        """
+        Initialize the process to capture a new image for updating a user's profile.
+        """
+        self.capture_user_name = user_name  # Store the user's name for whom the image is being updated
+
+        # Create a new window for capturing the new image
+        self.capture_image_window = ctk.CTkToplevel(self.main_window)
+        self.capture_image_window.geometry("900x600")
+        self.capture_image_window.title(f"Capture New Image for {user_name}")
+
+        # Configure grid layout for the capture window
+        self.capture_image_window.grid_rowconfigure(0, weight=1)
+        self.capture_image_window.grid_columnconfigure(0, weight=1)
+        self.capture_image_window.grid_columnconfigure(1, weight=1)
+
+        # Webcam label to display the camera feed
+        self.capture_webcam_label = util.get_img_label_grid(self.capture_image_window, width=700, height=500)
+        self.capture_webcam_label.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
+
+        # Capture button to capture and save the face
+        capture_button = util.get_button(self.capture_image_window, "Capture Image", "blue",
+                                        self.capture_and_save_new_image)
+        capture_button.grid(row=1, column=0, padx=10, pady=10, sticky='e')
+
+        # Close button to close the capture window
+        close_button = util.get_button(self.capture_image_window, "Close", "red",
+                                    self.capture_image_window.destroy)
+        close_button.grid(row=1, column=1, padx=10, pady=10, sticky='w')
+
+        # Start the camera and display the feed in the capture window
+        self.start_camera()
+        self.process_webcam_capture()  # Start processing the webcam for the capture window
+
+    def process_webcam_capture(self):
+        """
+        Continuously capture frames from the webcam and update the capture window.
+        """
+        if self.cap:
+            ret, frame = self.cap.read()
+            if ret:
+                # Convert the frame to RGB (OpenCV uses BGR by default)
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # Convert the image to a PhotoImage
+                img = Image.fromarray(frame)
+                imgtk = ImageTk.PhotoImage(image=img)
+                # Update the webcam label with the new image
+                self.capture_webcam_label.imgtk = imgtk
+                self.capture_webcam_label.configure(image=imgtk)
+            self.capture_webcam_label.after(10, self.process_webcam_capture)
+
+    def capture_and_save_new_image(self):
+        """
+        Capture the current frame from the webcam and save it as the user's new image.
+        """
+        if self.most_recent_capture_arr is None:
+            util.msg_box("Error", "No image captured!")
+            logging.error("No image captured")
+            return
+
+        faces = self.detect_face(self.most_recent_capture_arr)
+        if len(faces) == 0:
+            util.msg_box("Error", "No faces detected!")
+            logging.error("No faces detected")
+            return
+
+        user_name = self.capture_user_name
+        face_img_path = os.path.join(self.db_dir, f"{user_name}.jpg")
+        cv2.imwrite(face_img_path, self.most_recent_capture_arr)
+        logging.debug(f"Saved new face image to {face_img_path}")
+
+        face_embeddings = face_recognition.face_encodings(self.most_recent_capture_arr)
+        if face_embeddings:
+            embedding_path = os.path.join(self.db_dir, f"{user_name}.pickle")
+            with open(embedding_path, 'wb') as f:
+                pickle.dump(face_embeddings[0], f)
+            logging.debug(f"Updated face embeddings for {user_name}")
+
+            util.msg_box("Success", f"Image for {user_name} updated successfully!")
+        else:
+            util.msg_box("Error", "Failed to encode face. Try again!")
+            logging.error("Failed to encode face")
+
+        # Close the capture window
+        self.capture_image_window.destroy()
+        # Refresh the manage users window
+        self.manage_users_window.destroy()
+        self.manage_users()
+
+
+    def delete_user(self, user_name):
+        # Construct the paths for the image and encoding file
+        image_file = os.path.join(self.db_dir, f"{user_name}.jpg")
+        encoding_file = os.path.join(self.db_dir, f"{user_name}.pickle")
+
+        # Delete the image file if it exists
+        if os.path.exists(image_file):
+            os.remove(image_file)
+            print(f"Deleted {image_file}")
+
+        # Delete the encoding file if it exists
+        if os.path.exists(encoding_file):
+            os.remove(encoding_file)
+            print(f"Deleted {encoding_file}")
+
+        # Show a success message
+        util.msg_box("Success", f"User {user_name} deleted successfully!")
+
+        # Close the manage users window and refresh it
+        self.manage_users_window.destroy()
+        self.manage_users()  # Reopen the manage users window to refresh the list
+
             
             
     def on_close_manage_window(self):
