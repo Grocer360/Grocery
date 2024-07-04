@@ -245,6 +245,21 @@ class App:
         self.process_webcam_registration()  # Start processing the webcam for the registration window
 
 
+    def is_valid_username(self, username):
+            """
+            Validate the username.
+            Username should only contain alphanumeric characters and spaces, no special characters.
+            """
+            valid_username_pattern = re.compile(r'^[A-Za-z0-9 ]+$')
+            return bool(valid_username_pattern.match(username))
+
+    def is_unique_username(self, username):
+        """
+        Check if the username is unique in the database directory.
+        """
+        existing_files = os.listdir(self.db_dir)
+        existing_usernames = [os.path.splitext(file)[0] for file in existing_files]
+        return username not in existing_usernames
 
 
 
@@ -301,21 +316,6 @@ class App:
             util.msg_box("Error", "Failed to encode face. Try again!")
             logging.error("Failed to encode face")
 
-    def is_valid_username(self, username):
-            """
-            Validate the username.
-            Username should only contain alphanumeric characters and spaces, no special characters.
-            """
-            valid_username_pattern = re.compile(r'^[A-Za-z0-9 ]+$')
-            return bool(valid_username_pattern.match(username))
-
-    def is_unique_username(self, username):
-        """
-        Check if the username is unique in the database directory.
-        """
-        existing_files = os.listdir(self.db_dir)
-        existing_usernames = [os.path.splitext(file)[0] for file in existing_files]
-        return username not in existing_usernames
     def process_webcam_registration(self):
         """
         Continuously capture frames from the webcam and update the registration window.
