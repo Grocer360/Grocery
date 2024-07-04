@@ -15,8 +15,8 @@ import face_recognition
 import pickle
 import re
 import logging
-import tkinter.filedialog as filedialog
-import shutil
+# import tkinter.filedialog as filedialog
+# import shutil
 
 logging.basicConfig(level=logging.DEBUG)
 
