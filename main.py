@@ -15,6 +15,9 @@ import face_recognition
 import pickle
 import re
 import logging
+import psycopg2
+import hashlib
+from io import BytesIO
 # import tkinter.filedialog as filedialog
 # import shutil
 
@@ -39,6 +42,13 @@ class Config:
 
 class App:
     def __init__(self):
+        self.conn_details = {
+            'dbname': "okzegkwz",
+            'user': "okzegkwz",
+            'password': "7UwFflnPy3byudSr32K1ugHniRSVK6v_",
+            'host': "kandula.db.elephantsql.com",
+            'port': "5432"
+        }
         self.config = Config()
         self.main_window = ctk.CTk()  # Use ctk.CTk() for the main window
         self.main_window.geometry(self.config.get('window_size', "1200x520+350+100"))
@@ -199,7 +209,7 @@ class App:
             print(f"Log entry added: {log_entry}")
 
     def register_new_user(self):
-         # Create a new window for registering a new user
+        # Create a new window for registering a new user
         self.register_new_user_window = ctk.CTkToplevel(self.main_window)
         self.register_new_user_window.geometry("900x600")
         self.register_new_user_window.title("Register New User")
@@ -218,23 +228,32 @@ class App:
         self.name_entry = ctk.CTkEntry(self.register_new_user_window)
         self.name_entry.grid(row=0, column=1, padx=10, pady=0, sticky='w')
 
+        # Label for the password input
+        password_label = util.get_text_label(self.register_new_user_window, "Enter Password:")
+        password_label.grid(row=1, column=0, padx=10, pady=10, sticky='e')
+
+        # Entry widget for the password input
+        self.password_entry = ctk.CTkEntry(self.register_new_user_window, show='*')
+        self.password_entry.grid(row=1, column=1, padx=10, pady=0, sticky='w')
+
         # Webcam label to display the camera feed
         self.reg_webcam_label = util.get_img_label_grid(self.register_new_user_window, width=700, height=500)
-        self.reg_webcam_label.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
+        self.reg_webcam_label.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 
         # Capture button to capture and save the face
         capture_button = util.get_button(self.register_new_user_window, "Capture Face", "blue",
                                         lambda: self.capture_and_save_face())
-        capture_button.grid(row=2, column=0, padx=10, pady=10, sticky='e')
+        capture_button.grid(row=3, column=0, padx=10, pady=10, sticky='e')
 
         # Close button to close the registration window
         close_button = util.get_button(self.register_new_user_window, "Close", "red",
                                     self.register_new_user_window.destroy)
-        close_button.grid(row=2, column=1, padx=10, pady=10, sticky='w')
+        close_button.grid(row=3, column=1, padx=10, pady=10, sticky='w')
 
         # Start the camera and display the feed in the registration window
         self.start_camera()
-        self.process_webcam_registration()  # Start processing the webcam for the registration window
+        self.process_webcam_registration()
+  # Start processing the webcam for the registration window
 
 
     def is_valid_username(self, username):
@@ -258,16 +277,14 @@ class App:
 # Configure logging
 
     def capture_and_save_face(self):
-        """
-        Capture the current frame from the webcam, validate the username, and save the face image and embeddings.
-        """
         name = self.name_entry.get().strip()
+        password = self.password_entry.get().strip()
         logging.debug(f"Captured name: {name}")
 
-        # Validate the username
-        if not name:
-            util.msg_box("Error", "Name cannot be empty!")
-            logging.error("Name is empty")
+        # Validate the username and password
+        if not name or not password:
+            util.msg_box("Error", "Name and password cannot be empty!")
+            logging.error("Name or password is empty")
             return
 
         if not self.is_valid_username(name):
@@ -292,6 +309,9 @@ class App:
             logging.error("No faces detected")
             return
 
+        # Convert the image to binary data
+        img_bytes = bytes(self.most_recent_capture_arr)
+
         face_img_path = os.path.join(self.db_dir, f"{name}.jpg")
         cv2.imwrite(face_img_path, self.most_recent_capture_arr)
         logging.debug(f"Saved face image to {face_img_path}")
@@ -303,10 +323,41 @@ class App:
                 pickle.dump(face_embeddings[0], f)
             logging.debug(f"Saved face embeddings to {embedding_path}")
 
-            util.msg_box("Success", f"User {name} registered successfully!")
+            # Hash the password
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
+            # Insert user data into the database
+            try:
+                conn = psycopg2.connect(**self.conn_details)
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO Users (user_name, password, role, img)
+                    VALUES (%s, %s, %s, %s)
+                """, (name, hashed_password, 'user', psycopg2.Binary(img_bytes)))
+                print(f"User {name} data inserted successfully!")
+                conn.commit()
+                cursor.close()
+                conn.close()
+                util.msg_box("Success", f"User {name} registered successfully!")
+            except Exception as e:
+                logging.error(f"Failed to insert user data into database: {e}")
+                util.msg_box("Error", "Failed to register user. Try again!")
         else:
             util.msg_box("Error", "Failed to encode face. Try again!")
             logging.error("Failed to encode face")
+
+    def is_unique_username(self, username):
+        try:
+            conn = psycopg2.connect(**self.conn_details)
+            cursor = conn.cursor()
+            cursor.execute("SELECT user_name FROM Users WHERE user_name = %s", (username,))
+            result = cursor.fetchone()
+            cursor.close()
+            conn.close()
+            return result is None
+        except Exception as e:
+            logging.error(f"Database error: {e}")
+            return False
 
     def process_webcam_registration(self):
         """
