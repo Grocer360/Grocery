@@ -18,6 +18,9 @@ import logging
 import psycopg2
 import hashlib
 from io import BytesIO
+import io
+import zlib
+import base64
 # import tkinter.filedialog as filedialog
 # import shutil
 
@@ -211,7 +214,7 @@ class App:
     def register_new_user(self):
         # Create a new window for registering a new user
         self.register_new_user_window = ctk.CTkToplevel(self.main_window)
-        self.register_new_user_window.geometry("900x600")
+        self.register_new_user_window.geometry("900x700")
         self.register_new_user_window.title("Register New User")
 
         # Configure grid layout for the registration window
@@ -223,10 +226,10 @@ class App:
         # Label for the name input
         name_label = util.get_text_label(self.register_new_user_window, "Enter Name:")
         name_label.grid(row=0, column=0, padx=10, pady=10, sticky='e')
-
+        
         # Entry widget for the name input
         self.name_entry = ctk.CTkEntry(self.register_new_user_window)
-        self.name_entry.grid(row=0, column=1, padx=10, pady=0, sticky='w')
+        self.name_entry.grid(row=0, column=1, padx=10, pady=10, sticky='w')
 
         # Label for the password input
         password_label = util.get_text_label(self.register_new_user_window, "Enter Password:")
@@ -315,7 +318,7 @@ class App:
         face_img_path = os.path.join(self.db_dir, f"{name}.jpg")
         cv2.imwrite(face_img_path, self.most_recent_capture_arr)
         logging.debug(f"Saved face image to {face_img_path}")
-
+        print(face_img_path)
         face_embeddings = face_recognition.face_encodings(self.most_recent_capture_arr)
         if face_embeddings:
             embedding_path = os.path.join(self.db_dir, f"{name}.pickle")
@@ -333,7 +336,7 @@ class App:
                 cursor.execute("""
                     INSERT INTO Users (user_name, password, role, img)
                     VALUES (%s, %s, %s, %s)
-                """, (name, hashed_password, 'user', psycopg2.Binary(img_bytes)))
+                """, (name, hashed_password, 'user', face_img_path))
                 print(f"User {name} data inserted successfully!")
                 conn.commit()
                 cursor.close()
@@ -358,7 +361,16 @@ class App:
         except Exception as e:
             logging.error(f"Database error: {e}")
             return False
-
+    def compress_and_encode_image(self,image_data):
+    # Assuming image_data is a BytesIO object or similar containing the image
+        with Image.open(image_data) as img:
+            with io.BytesIO() as img_buffer:
+                img.save(img_buffer, format='JPEG')
+                img_data = img_buffer.getvalue()
+        
+        compressed_data = zlib.compress(img_data)
+        encoded_data = base64.b64encode(compressed_data).decode('utf-8')
+        return encoded_data
     def process_webcam_registration(self):
         """
         Continuously capture frames from the webcam and update the registration window.
