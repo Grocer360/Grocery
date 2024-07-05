@@ -6,6 +6,7 @@ from tkinter import simpledialog, messagebox
 import cv2
 from PIL import Image, ImageTk
 import datetime
+from datetime import datetime
 import subprocess
 import util  # Import util that now uses customtkinter
 import numpy as np
@@ -171,8 +172,29 @@ class App:
             util.msg_box("Welcome!", f"Hello, {recognized_name}")
             self.log_access("Login", recognized_name)
 
+            try:
+                current_time = datetime.now()
+                conn = psycopg2.connect(**self.conn_details)
+                cursor = conn.cursor()
+
+                # Update the user's login status and time
+                cursor.execute("""
+                    UPDATE Users
+                    SET logged_in = %s, time_stamp_in = %s
+                    WHERE user_name = %s
+                """, (True, current_time, recognized_name))
+                conn.commit()
+                print(f"Login time logged for {recognized_name} at {current_time}")
+
+                cursor.close()
+                conn.close()
+            except Exception as e:
+                print(f"Error logging login time: {e}")
+                util.msg_box("Error", "Failed to log login time. Please try again.")
+
         # Clean up temporary file
         os.remove(img_path)
+
 
     def logout(self):
         if self.most_recent_capture_arr is None:
@@ -206,10 +228,26 @@ class App:
         """
         Log the access details to a log file.
         """
-        with open(self.log_path, 'a') as f:
-            log_entry = f"{datetime.datetime.now()}: {name} {action}\n"
-            f.write(log_entry)
-            print(f"Log entry added: {log_entry}")
+        try:
+            # Retrieve log path from configuration or default to './log.txt'
+            self.log_path = self.config.get('log_path', './log.txt')
+
+            # Convert log_path to an absolute path if it is not already
+            self.log_path = os.path.abspath(self.log_path)
+            
+            # Ensure the log file's directory exists
+            logs_dir = os.path.dirname(self.log_path)
+            if not os.path.exists(logs_dir):
+                os.makedirs(logs_dir)
+
+            # Write the log entry to the file
+            with open(self.log_path, 'a') as f:
+                current_time = datetime.now()  # Get the current timestamp
+                log_entry = f"{current_time}: {name} {action}\n"
+                f.write(log_entry)
+                print(f"Log entry added: {log_entry.strip()}")
+        except Exception as e:
+            print(f"Failed to log access: {e}")
 
     def register_new_user(self):
         # Create a new window for registering a new user
@@ -237,25 +275,35 @@ class App:
 
         # Entry widget for the password input
         self.password_entry = ctk.CTkEntry(self.register_new_user_window, show='*')
-        self.password_entry.grid(row=1, column=1, padx=10, pady=0, sticky='w')
+        self.password_entry.grid(row=1, column=1, padx=10, pady=10, sticky='w')
+
+        # Label for the role selection
+        role_label = util.get_text_label(self.register_new_user_window, "Select Role:")
+        role_label.grid(row=2, column=0, padx=10, pady=10, sticky='e')
+
+        # Dropdown menu for role selection
+        self.role_var = ctk.StringVar(value="user")  # Default value
+        role_dropdown = ctk.CTkOptionMenu(self.register_new_user_window, variable=self.role_var, values=["admin", "user"])
+        role_dropdown.grid(row=2, column=1, padx=10, pady=10, sticky='w')
 
         # Webcam label to display the camera feed
         self.reg_webcam_label = util.get_img_label_grid(self.register_new_user_window, width=700, height=500)
-        self.reg_webcam_label.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+        self.reg_webcam_label.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
 
         # Capture button to capture and save the face
         capture_button = util.get_button(self.register_new_user_window, "Capture Face", "blue",
                                         lambda: self.capture_and_save_face())
-        capture_button.grid(row=3, column=0, padx=10, pady=10, sticky='e')
+        capture_button.grid(row=4, column=0, padx=10, pady=10, sticky='e')
 
         # Close button to close the registration window
         close_button = util.get_button(self.register_new_user_window, "Close", "red",
                                     self.register_new_user_window.destroy)
-        close_button.grid(row=3, column=1, padx=10, pady=10, sticky='w')
+        close_button.grid(row=4, column=1, padx=10, pady=10, sticky='w')
 
         # Start the camera and display the feed in the registration window
         self.start_camera()
         self.process_webcam_registration()
+
   # Start processing the webcam for the registration window
 
 
@@ -282,7 +330,8 @@ class App:
     def capture_and_save_face(self):
         name = self.name_entry.get().strip()
         password = self.password_entry.get().strip()
-        logging.debug(f"Captured name: {name}")
+        role = self.role_var.get()  # Get the selected role
+        logging.debug(f"Captured name: {name} with role: {role}")
 
         # Validate the username and password
         if not name or not password:
@@ -336,7 +385,7 @@ class App:
                 cursor.execute("""
                     INSERT INTO Users (user_name, password, role, img)
                     VALUES (%s, %s, %s, %s)
-                """, (name, hashed_password, 'user', face_img_path))
+                """, (name, hashed_password, role, face_img_path))
                 print(f"User {name} data inserted successfully!")
                 conn.commit()
                 cursor.close()
@@ -348,6 +397,7 @@ class App:
         else:
             util.msg_box("Error", "Failed to encode face. Try again!")
             logging.error("Failed to encode face")
+
 
     def is_unique_username(self, username):
         try:
