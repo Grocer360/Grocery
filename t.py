@@ -54,7 +54,13 @@ def sign_in():
     role = role_var.get()
 
     if verify_login(username, password, role):
-        messagebox.showinfo("Login Successful", "Login successful!")
+            root.destroy()
+            if role == "user":
+                import sellar 
+            # elif role == "admin":
+                # import adminpage  # Assuming you have a module for the admin page
+            else:
+                messagebox.showerror("Role Error", "Invalid role. Please try again.")
     else:
         messagebox.showerror("Login Failed", "Invalid credentials. Please try again.")
 

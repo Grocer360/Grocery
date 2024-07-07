@@ -101,7 +101,7 @@ class App:
                 self.process_webcam()
             except Exception as e:
                 print(f"Error starting camera: {e}")
-
+        
     def process_webcam(self):
         try:
             ret, frame = self.cap.read()
@@ -109,9 +109,7 @@ class App:
                 print("Failed to capture frame from camera")
                 self.main_window.after(100, self.process_webcam)
                 return
-
             frame = frame.astype('uint8')  # Convert to uint8 format
-
             self.most_recent_capture_arr = frame  # Update this with the most recent frame
 
             img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -277,11 +275,16 @@ class App:
         cv2.imwrite(face_img_path, self.most_recent_capture_arr)
 
         # Extract and save face embeddings
+        # face_embeddings = face_recognition.face_encodings(self.most_recent_capture_arr)
+        # if face_embeddings:
+        #     embedding_path = os.path.join(self.db_dir, f"{name}.pickle")
+        #     with open(embedding_path, 'wb') as f:
+        #         pickle.dump(face_embeddings[0], f)
+
         face_embeddings = face_recognition.face_encodings(self.most_recent_capture_arr)
         if face_embeddings:
-            embedding_path = os.path.join(self.db_dir, f"{name}.pickle")
-            with open(embedding_path, 'wb') as f:
-                pickle.dump(face_embeddings[0], f)
+            # Convert the image to bytes
+            image_bytes = pickle.dumps(self.most_recent_capture_arr)
 
             # Save the username, hashed password, and image path to the database
             try:
@@ -290,9 +293,9 @@ class App:
 
                 # Insert user details into the database
                 cur.execute("""
-                    INSERT INTO users (user_name, password, role, img, time_stamp)
-                    VALUES (%s, %s, %s, %s, %s)
-                """, (name, self.password_entry.get(), "user", face_img_path, datetime.datetime.now()))
+                    INSERT INTO users (user_name, password, role, working_hours, logged_in, img, time_stamp_in, time_stamp_out)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (name, self.password_entry.get(), "user", 0, False, image_bytes, datetime.datetime.now(), None))
 
                 conn.commit()
                 cur.close()
@@ -435,9 +438,9 @@ class App:
                 cur = conn.cursor()
 
                 cur.execute("""
-                    INSERT INTO users (user_name, password, role, img, time_stamp)
-                    VALUES (%s, %s, %s, %s, %s)
-                """, (name, self.password_entry.get(), "user", face_img_path, datetime.datetime.now()))
+                    INSERT INTO users (user_name, password, role, working_hours, logged_in, img, time_stamp_in, time_stamp_out)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (name, self.password_entry.get(), "user", 0, False, image_bytes, datetime.datetime.now(), None))
 
                 conn.commit()
                 cur.close()
