@@ -20,7 +20,7 @@ class DataVisualisation():
     total_sales_per_cashier["employee_1"] = total_sales_per_cashier["employee_1"] * 2
     total_sales_per_cashier["employee_2"] = total_sales_per_cashier["employee_1"] * 5
     total_sales_per_cashier["employee_3"] = total_sales_per_cashier["employee_1"] * 3
-    print(total_sales_per_cashier)
+   
     # --------------------------------------------------------------------------------
     sales_over_time = df.groupby('date')['total_transaction'].sum()
     # print(sales_over_time)
