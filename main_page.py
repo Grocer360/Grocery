@@ -3,6 +3,8 @@ from tkinter import messagebox
 import psycopg2
 from PIL import Image, ImageTk
 import customtkinter as ctk  # Assuming this is your custom tkinter module
+from datetime import datetime
+import login
 
 # Database connection details (ElephantSQL)
 conn_details = {
@@ -16,9 +18,18 @@ conn_details = {
 # Initialize the main application window
 root = ctk.CTk()
 root.title("Grocer360 Authentication")
-root.geometry("900x700+200+0")
+root.geometry("900x700")
 root.resizable(False, False)  # Disable window resizing
 root.iconbitmap("myIcon.ico")
+
+# Center the window on the screen
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+width_of_window = 900
+height_of_window = 700
+x_coordinate = (screen_width / 2) - (width_of_window / 2)
+y_coordinate = (screen_height / 2) - (height_of_window / 2)
+root.geometry(f"{width_of_window}x{height_of_window}+{int(x_coordinate)}+{int(y_coordinate)}")
 
 # Set appearance mode and default color theme
 ctk.set_appearance_mode("dark")
@@ -38,7 +49,8 @@ def verify_login(username, password, role):
         cursor.execute("SELECT * FROM Users WHERE user_name = %s AND password = %s AND role = %s", (username, password, role))
         user = cursor.fetchone()
         if user:
-            cursor.execute("UPDATE Users SET logged_in = %s WHERE user_name = %s", (True, username))
+            current_time = datetime.now()
+            cursor.execute("UPDATE Users SET logged_in = %s, time_stamp_in = %s WHERE user_name = %s", (True, current_time, username))
             conn.commit()
         cursor.close()
         conn.close()
@@ -46,7 +58,8 @@ def verify_login(username, password, role):
     except Exception as e:
         print(f"Error: {e}")
         return False
-    
+
+# Function to handle sign-in
 # Function to handle sign-in
 def sign_in():
     username = username_entry.get()
@@ -54,15 +67,18 @@ def sign_in():
     role = role_var.get()
 
     if verify_login(username, password, role):
-            root.destroy()
-            if role == "user":
-                import sellar 
-            # elif role == "admin":
-                # import adminpage  # Assuming you have a module for the admin page
-            else:
-                messagebox.showerror("Role Error", "Invalid role. Please try again.")
+        root.destroy()
+        if role == "user":
+            import sellerPaeg  # Import the seller page module
+            sellerPaeg.initialize_seller_page(username)  # Pass the username
+        elif role == "admin":
+            # import adminpage  # Assuming you have a module for the admin page
+            pass
+        else:
+            messagebox.showerror("Role Error", "Invalid role. Please try again.")
     else:
         messagebox.showerror("Login Failed", "Invalid credentials. Please try again.")
+
 
 # Function to show the login UI
 def initialize_login_ui(root):
@@ -88,19 +104,12 @@ def initialize_login_ui(root):
     ctk.CTkButton(root, text="Login", command=sign_in, width=200, height=40, corner_radius=10).pack(pady=10)
 
     # Load and resize the icon for face sign-in button
-    icon_image = Image.open("photo-camera-interface-symbol-for-button.png")
+    icon_image = Image.open("camera.png")
     icon_image = icon_image.resize((25, 25), Image.Resampling.LANCZOS)  # Resize the icon
     icon_photo = ImageTk.PhotoImage(icon_image)
 
     # Define the face sign-in button with the resized icon
     face_signin_button = ctk.CTkButton(
-        #  root,
-        # image=icon_photo,
-        # text="",  # No text, just the icon
-        # command=show_face_signin,  # Use the login function for face sign-in
-        # width=10,  # Adjust width as needed
-        # height=10,  # Adjust height as needed
-        # bg_color="",  # Transparent background
         root,
         image=icon_photo,
         text="use cam to sign in",  # No text, just the icon
@@ -139,15 +148,7 @@ def clear_screen():
 
 # Function to show the face sign-in top-level window
 def show_face_signin():
-    face_signin_window = ctk.CTkToplevel(root)
-    face_signin_window.title("Face Sign-In")
-    face_signin_window.geometry("400x300")
-    face_signin_window.lift()
-    face_signin_window.focus_force()
-    face_signin_window.grab_set()
-
-    ctk.CTkLabel(face_signin_window, text="Face Sign-In", font=("Helvetica", 20)).pack(pady=20)
-    ctk.CTkButton(face_signin_window, text="Simulate Face Sign-In", command=face_signin_success, width=200, height=40, corner_radius=10).pack(pady=20)
+    login.run_face_recognition_app()
 
 def face_signin_success():
     messagebox.showinfo("Face Sign-In", "Face sign-in successful!")

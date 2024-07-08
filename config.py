@@ -5,7 +5,7 @@ import json
 import psycopg2
 
 class Config:
-    def _init_(self, config_file='config.json'):
+    def __init__(self, config_file='config.json'):
         self.config_file = os.path.join(os.path.dirname(__file__), config_file)
         self.load_config()
 

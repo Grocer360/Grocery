@@ -1,6 +1,6 @@
 {
     "camera_index": 0,
-    "db_dir": "./db",
-    "log_path": "./log.txt",
+    "db_dir": "./singles/db",
+    "log_path": "./singles/logentry.txt",
     "window_size": "1200x520+350+100"
 }

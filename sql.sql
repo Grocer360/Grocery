@@ -16,14 +16,6 @@ CREATE TABLE Products (
     price DECIMAL(10, 2) NOT NULL
 );
 
-CREATE TABLE Interactions (
-    bar_code VARCHAR(255) NOT NULL,
-    user_name VARCHAR(255) NOT NULL,
-    time_stamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY(user_name, bar_codeوtime_stamp),
-    FOREIGN KEY (bar_code) REFERENCES Products(bar_code),
-    FOREIGN KEY (user_name) REFERENCES Users(user_name)
-);
 
 
 
