@@ -8,10 +8,14 @@ from PIL import Image, ImageTk
 # import datetime
 from datetime import datetime
 import subprocess
-import util  # Import util that now uses customtkinter
 import numpy as np
 import json
-import uuid
+
+import sys
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, parent_dir)
+import util
+
 import face_recognition
 import pickle
 import re
@@ -398,13 +402,13 @@ class App:
             valid_username_pattern = re.compile(r'^[A-Za-z0-9 ]+$')
             return bool(valid_username_pattern.match(username))
 
-    # def is_unique_username(self, username):
-    #     """
-    #     Check if the username is unique in the database directory.
-    #     """
-    #     existing_files = os.listdir(self.db_dir)
-    #     existing_usernames = [os.path.splitext(file)[0] for file in existing_files]
-    #     return username not in existing_usernames
+    def is_unique_username(self, username):
+        """
+        Check if the username is unique in the database directory.
+        """
+        existing_files = os.listdir(self.db_dir)
+        existing_usernames = [os.path.splitext(file)[0] for file in existing_files]
+        return username not in existing_usernames
 
 
 
