@@ -10,8 +10,11 @@ import csv
 import simpleaudio as sa
 from functools import partial
 from datetime import datetime, timedelta, time
+# from login import 
 
-def initialize_seller_page(username):
+def initialize_seller_page(username,top,parent):
+    top.destroy()
+    parent.destroy()
     # Initialize the main window
     app = ctk.CTk()
     app.geometry("800x600")
@@ -20,7 +23,7 @@ def initialize_seller_page(username):
     # Set custom colors and styles
     ctk.set_default_color_theme("dark-blue")
     ctk.set_appearance_mode("dark")
-    
+            
     # Define colors
     colors = {
         "forest_green": "#228B22",
@@ -59,14 +62,7 @@ def initialize_seller_page(username):
     def log_out():
         try:
             cursor = conn.cursor()
-            current_time = datetime.now()
-
-            cursor.execute("""
-            UPDATE users
-            SET working_hours = '0'::interval
-            WHERE user_name = %s;
-        """, (username,))
-            
+            current_time = datetime.now()            
 
             # Update time_stamp_out with current_time
             cursor.execute("""
@@ -93,6 +89,8 @@ def initialize_seller_page(username):
         finally:
             # You might want to destroy the app window after logout
             app.destroy()
+            import main_page
+            main_page.initialize_login_ui(app)
 
 
     # Function to add product to database
@@ -330,7 +328,7 @@ def initialize_seller_page(username):
             file_empty = True
 
         with open('receipt.csv', 'a', newline='') as csvfile:
-            fieldnames = ['ProdName', 'Quantity', 'Category', 'Price', 'Total', 'Seller']
+            fieldnames = ['ProdName', 'Quantity', 'Category', 'Price', 'Total', 'Seller','Time']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
             # Write the header only if the file is empty
@@ -344,7 +342,8 @@ def initialize_seller_page(username):
                     'Category': product[2],
                     'Price': product[3],
                     'Total': product[4],
-                    'Seller': username  # Include the seller's name
+                    'Seller': username, # Include the seller's name
+                    'Time' : datetime.now()  
                 })
 
     def print_receipt():
@@ -360,51 +359,6 @@ def initialize_seller_page(username):
         update_product_table()
         messagebox.showinfo("Info", "Order canceled and list cleared")
 
-  
-    
-    def update_working_hours(username, conn):
-        try:
-            cursor = conn.cursor()
-
-            # Query to calculate work duration
-            calculate_query = sql.SQL("""
-                SELECT user_name, 
-                    time_stamp_out - time_stamp_in AS work_duration
-                FROM users
-                WHERE user_name = %s;
-            """)
-            
-            cursor.execute(calculate_query, (username,))
-            result = cursor.fetchone()
-
-            if result:
-                user_name, work_duration = result
-                # Update query to update working hours
-                update_query = sql.SQL("""
-                    UPDATE users
-                    SET working_hours = COALESCE(working_hours, '00:00:00'::time) + %s
-                    WHERE user_name = %s;
-                """)
-                
-                cursor.execute(update_query, (work_duration, username))
-                conn.commit()
-                print(f"Updated working hours for user {username}")
-            else:
-                print(f"No data found for user {username}")
-
-        except psycopg2.Error as e:
-            conn.rollback()
-            print(f"Error updating working hours: {e}")
-
-        finally:
-            if cursor:
-                cursor.close()
-
-
-
-
-
-    
     bottom_buttons = ["Cancel", "Print"]
     for btn_text in bottom_buttons:
         color = colors["forest_green"] if btn_text != "Cancel" else colors["crimson_red"]
@@ -413,6 +367,8 @@ def initialize_seller_page(username):
         btn.pack(side="left", padx=5)
 
     # Run the application
+    # parent.destroy()
+
     app.mainloop()
 
 # Example usage:

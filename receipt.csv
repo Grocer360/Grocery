@@ -1,3 +1,14 @@
 ProdName,Quantity,Category,Price,Total,Seller
 Product Name,3,Category,25.99,77.97,user
 spagheti,2,food,1.50,3.00,user
+spagheti,1,food,1.50,1.50,user
+Product Name,1,Category,25.99,25.99,user
+spagheti,3,food,1.50,4.50,YourUsername,2024-07-08 16:03:25.411974
+Product Name,1,Category,25.99,25.99,YourUsername,2024-07-08 16:03:25.412977
+spagheti,1,food,1.50,1.50,YourUsername,2024-07-08 17:18:31.514881
+Product Name,3,Category,25.99,77.97,YourUsername,2024-07-08 17:18:31.514881
+Product Name,4,Category,25.99,103.96,YourUsername,2024-07-08 17:38:27.249263
+spagheti,2,food,1.50,3.00,YourUsername,2024-07-08 17:38:27.249263
+spagheti,1,food,1.50,1.50,abd,2024-07-08 17:56:29.785162
+soud,1,animal,0.00,0.00,abd,2024-07-08 17:56:29.785162
+Product Name,1,Category,25.99,25.99,abd,2024-07-08 17:56:29.785162

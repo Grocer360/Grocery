@@ -4,7 +4,7 @@ import psycopg2
 from PIL import Image, ImageTk
 import customtkinter as ctk  # Assuming this is your custom tkinter module
 from datetime import datetime
-import login
+from login import FaceRecognitionApp
 
 # Database connection details (ElephantSQL)
 conn_details = {
@@ -69,15 +69,27 @@ def sign_in():
     if verify_login(username, password, role):
         root.destroy()
         if role == "user":
-            import sellerPaeg  # Import the seller page module
-            sellerPaeg.initialize_seller_page(username)  # Pass the username
-        elif role == "admin":
+            # Import the seller page module
+            # sellerPaeg.initialize_seller_page(username) # Pass the username
+            pass
+
+        elif role == "admin": 
             # import adminpage  # Assuming you have a module for the admin page
             pass
         else:
             messagebox.showerror("Role Error", "Invalid role. Please try again.")
     else:
         messagebox.showerror("Login Failed", "Invalid credentials. Please try again.")
+
+def openFaceLogin():
+    face_recognition_app = FaceRecognitionApp(root)
+    face_recognition_app.mainloop()
+    # print("11111111",face_recognition_app.grant_acsses())
+    # if FaceRecognitionApp.grant_acsses:
+    # import sellerPaeg
+
+    # sellerPaeg.initialize_seller_page("abd")
+
 
 
 # Function to show the login UI
@@ -113,7 +125,7 @@ def initialize_login_ui(root):
         root,
         image=icon_photo,
         text="use cam to sign in",  # No text, just the icon
-        command=show_face_signin,  # Use the login function for face sign-in
+        command=openFaceLogin,  # Use the login function for face sign-in
         width=10,  # Adjust width as needed
         height=10,  # Adjust height as needed
         fg_color="#242424",  # Make the button transparent
@@ -147,8 +159,8 @@ def clear_screen():
         widget.destroy()
 
 # Function to show the face sign-in top-level window
-def show_face_signin():
-    login.run_face_recognition_app()
+# def show_face_signin():
+#     login.run_face_recognition_app()
 
 def face_signin_success():
     messagebox.showinfo("Face Sign-In", "Face sign-in successful!")
