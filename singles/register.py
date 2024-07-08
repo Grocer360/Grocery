@@ -1,5 +1,3 @@
-# register_user.py
-
 import tkinter as tk
 import customtkinter as ctk
 ctk.set_appearance_mode("dark")
@@ -7,6 +5,7 @@ import cv2
 from PIL import Image, ImageTk
 import os
 import psycopg2
+import re  # Import regex module for validation
 from config import Config, get_db_connection
 import util
 import logging
@@ -14,15 +13,15 @@ import logging
 class RegisterUserApp:
     def __init__(self, root):
         self.conn_details = {
-        'dbname': "okzegkwz",
-        'user': "okzegkwz",
-        'password': "7UwFflnPy3byudSr32K1ugHniRSVK6v_",
-        'host': "kandula.db.elephantsql.com",
-        'port': "5432"
-    }
+            'dbname': "okzegkwz",
+            'user': "okzegkwz",
+            'password': "7UwFflnPy3byudSr32K1ugHniRSVK6v_",
+            'host': "kandula.db.elephantsql.com",
+            'port': "5432"
+        }
         self.root = root
         self.root.title("Register New User")
-        self.root.geometry("800x650")
+        self.root.geometry("800x700")
         self.root.configure(bg='#333333')
         self.root.resizable(False, False)
         
@@ -47,6 +46,7 @@ class RegisterUserApp:
 
         self.username_entry = ctk.CTkEntry(self.input_frame, placeholder_text="Username")
         self.username_entry.pack(side=ctk.LEFT, padx=10)
+        self.username_entry.bind("<KeyRelease>", self.validate_username)
 
         # Create and pack the password label and entry into the frame
         self.password_label = util.get_text_label(self.input_frame, text="")
@@ -60,11 +60,12 @@ class RegisterUserApp:
         self.capture_image_button.pack(pady=10)
 
         # # Button for saving user
-        # self.save_user_button = util.get_button(self.root, 'Save User', '#00796b', self.save_user)
-        # self.save_user_button.pack(pady=10)
+        self.save_user_button = util.get_button(self.root, 'Sign Up', '#00796b', self.save_user)
+        self.save_user_button.pack(pady=10)
 
         self.cap = None
         self.most_recent_capture_arr = None
+        self.captured_image_displayed = False  # Variable to check if captured image is displayed
         self.start_camera()
 
     def start_camera(self):
@@ -77,6 +78,10 @@ class RegisterUserApp:
 
     def process_webcam(self):
         try:
+            if self.captured_image_displayed:
+                self.root.after(20, self.process_webcam)
+                return
+
             ret, frame = self.cap.read()
             if not ret or frame is None:
                 self.root.after(100, self.process_webcam)
@@ -119,8 +124,48 @@ class RegisterUserApp:
 
         img_path = os.path.join(user_img_dir, f"{username}.jpg")
         cv2.imwrite(img_path, self.most_recent_capture_arr)
-        util.msg_box("Success", f"Image for {username} captured successfully.")
         
+        # Display the captured image in the webcam feed
+        self.captured_image_displayed = True
+        img_rgb = cv2.cvtColor(self.most_recent_capture_arr, cv2.COLOR_BGR2RGB)
+        img_pil = Image.fromarray(img_rgb)
+        imgtk = ImageTk.PhotoImage(image=img_pil)
+        self.webcam_label.imgtk = imgtk
+        self.webcam_label.configure(image=imgtk)
+
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        role = self.role_var.get()
+
+        if not username:
+            util.msg_box("Error", "Please enter a username.")
+            return
+
+        if not password or len(password) < 6:
+            util.msg_box("Error", "Password must be at least 6 characters long.")
+            return
+
+        # Ensure the image has been captured
+        img_path = os.path.join(self.db_dir, f"{username}.jpg")
+        if not os.path.exists(img_path):
+            util.msg_box("Error", "Please capture an image first.")
+            return
+
+        # Check if the username is unique
+        if not self.is_unique_username(username):
+            util.msg_box("Error", "Username already exists. Please choose a different one.")
+            return
+
+    def detect_face(self, frame):
+        """
+        Detects faces in the given frame using Haar cascade classifier.
+        """
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        return faces
+    
+    def save_user(self):
         username = self.username_entry.get()
         password = self.password_entry.get()
         role = self.role_var.get()
@@ -168,14 +213,9 @@ class RegisterUserApp:
             print(f"Error saving new user: {e}")
             util.msg_box("Error", "Failed to register new user. Please try again.")
 
-    def detect_face(self, frame):
-        """
-        Detects faces in the given frame using Haar cascade classifier.
-        """
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-        return faces
+        # Resume the webcam feed after saving the user
+        self.captured_image_displayed = False
+        self.process_webcam()
 
     def is_unique_username(self, username):
         try:
@@ -190,53 +230,11 @@ class RegisterUserApp:
             logging.error(f"Database error: {e}")
             return False
 
-    # def save_user(self):
-    #     username = self.username_entry.get()
-    #     password = self.password_entry.get()
-    #     role = self.role_var.get()
-
-    #     if not username:
-    #         util.msg_box("Error", "Please enter a username.")
-    #         return
-
-    #     if not password or len(password) < 6:
-    #         util.msg_box("Error", "Password must be at least 6 characters long.")
-    #         return
-
-    #     # Ensure the image has been captured
-    #     img_path = os.path.join(self.db_dir, f"{username}.jpg")
-    #     if not os.path.exists(img_path):
-    #         util.msg_box("Error", "Please capture an image first.")
-    #         return
-
-    #     # Check if the username is unique
-    #     if not self.is_unique_username(username):
-    #         util.msg_box("Error", "Username already exists. Please choose a different one.")
-    #         return
-
-    #     try:
-    #         conn = psycopg2.connect(**self.conn_details)
-    #         if conn is None:
-    #             util.msg_box("Error", "Cannot connect to the database.")
-    #             print("Cannot connect to the database.")
-    #             return
-
-    #         cursor = conn.cursor()
-
-    #         # Insert new user into the database
-    #         cursor.execute("""
-    #             INSERT INTO Users (user_name, password, role, logged_in, img)
-    #             VALUES (%s, %s, %s, %s, %s)
-    #         """, (username, password, role, False, img_path))
-    #         conn.commit()
-
-    #         cursor.close()
-    #         conn.close()
-
-    #         util.msg_box("Success", f"User {username} registered successfully.")
-    #     except Exception as e:
-    #         print(f"Error saving new user: {e}")
-    #         util.msg_box("Error", "Failed to register new user. Please try again.")
+    def validate_username(self, event):
+        username = self.username_entry.get()
+        if not re.match("^[a-zA-Z0-9]*$", username):
+            self.username_entry.delete(0, tk.END)
+            util.msg_box("Error", "Username can only contain letters and numbers.")
 
 if __name__ == "__main__":
     root = tk.Tk()
