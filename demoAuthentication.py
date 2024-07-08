@@ -121,7 +121,7 @@ def load_logoImg(root, light_image_path, dark_image_path):
     try:
         my_image = ctk.CTkImage(light_image=Image.open(light_image_path),
                                 dark_image=Image.open(dark_image_path),
-                                size=(200, 200))
+                                size=(100, 100))
         image_label = ctk.CTkLabel(root, image=my_image, text="")
         image_label.pack(padx=5, pady=20)
     except IOError as e:
@@ -132,7 +132,7 @@ def load_BGImg(root, light_image_path, dark_image_path):
     try:
         my_image = ctk.CTkImage(light_image=Image.open(light_image_path),
                                 dark_image=Image.open(dark_image_path),
-                                size=(400, 720))
+                                size=(390, 720))
         image_label = ctk.CTkLabel(root, image=my_image, text="")
         image_label.pack(side=LEFT, padx=0)
     except IOError as e:

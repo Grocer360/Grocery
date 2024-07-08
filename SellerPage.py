@@ -70,10 +70,10 @@ class SellerPage(ctk.CTk):
         self.nav_frame = ctk.CTkFrame(self)
         self.nav_frame.grid(row=0, column=1, sticky="nw", pady=90, padx=10)
 
-        self.status_label = ctk.CTkLabel(self.nav_frame, text="Selling Status", font=("Helvetica", 16))
+        self.status_label = ctk.CTkLabel(self.nav_frame, text="Selling Status", font=("Century Gothic", 25))
         self.status_label.grid(row=10, column=0, columnspan=2, pady=10)
 
-        load_BGImg(self, 'adminBG.png', 'adminBG.png')
+        load_BGImg(self, 'SellerBG.png', 'SellerBG.png')
 
         self.btn_add_product = ctk.CTkButton(self.nav_frame, text="Scan", command=self.process_barcodes, width=150, height=50)
         self.btn_add_product.grid(row=0, column=0, padx=20, pady=20)
@@ -496,14 +496,13 @@ class SellerPage(ctk.CTk):
 
 def load_BGImg(app, light_image_path, dark_image_path):
     try:
-        light_image = Image.open(light_image_path).resize((400, 860))
-        dark_image = Image.open(dark_image_path).resize((400, 860))
-        my_image = ctk.CTkImage(light_image=light_image, dark_image=dark_image, size=(400, 860))
+        light_image = Image.open(light_image_path).resize((400, 850))
+        dark_image = Image.open(dark_image_path).resize((400, 850))
+        my_image = ctk.CTkImage(light_image=light_image, dark_image=dark_image, size=(400, 870))
         image_label = ctk.CTkLabel(app, image=my_image, text="")
         image_label.grid(row=0, column=0, sticky="nsew")
     except IOError as e:
         messagebox.showerror("Error", f"Failed to load image: {e}")
-
 
 
 # Main function to run the application

@@ -190,27 +190,27 @@ class ManegerPage(ctk.CTk):
         self.title(f"Supermarket Management System - Welcome {username}")
 
         self.nav_frame = ctk.CTkFrame(self)
-        self.nav_frame.grid(row=0, column=1, sticky="nw", pady=90, padx=10)
+        self.nav_frame.grid(row=0, column=1, sticky="ns", pady=0, padx=10)
 
         load_BGImg(self, 'adminBG.png', 'adminBG.png')
 
-        self.btn_add_product = ctk.CTkButton(self.nav_frame, text="Add Product", command=self.show_add_product, width=150, height=50)
-        self.btn_add_product.grid(row=0, column=0, padx=20, pady=20)
+        self.btn_add_product = ctk.CTkButton(self.nav_frame, text="Add Product", command=self.show_add_product, width=150, height=70)
+        self.btn_add_product.grid(row=0, column=0, padx=20, pady=(100,30))
 
-        self.btn_add_employee = ctk.CTkButton(self.nav_frame, text="Add Employee", command=self.show_add_employee, width=150, height=50)
-        self.btn_add_employee.grid(row=1, column=0, padx=20, pady=20)
+        self.btn_add_employee = ctk.CTkButton(self.nav_frame, text="Add Employee", command=self.show_add_employee, width=150, height=70)
+        self.btn_add_employee.grid(row=1, column=0, padx=20, pady=30)
 
-        self.btn_view_products = ctk.CTkButton(self.nav_frame, text="View Products", command=self.show_view_products, width=150, height=50)
-        self.btn_view_products.grid(row=2, column=0, padx=20, pady=20)
+        self.btn_view_products = ctk.CTkButton(self.nav_frame, text="View Products", command=self.show_view_products, width=150, height=70)
+        self.btn_view_products.grid(row=2, column=0, padx=20, pady=30)
 
-        self.btn_view_employees = ctk.CTkButton(self.nav_frame, text="View Employees", command=self.show_view_employees, width=150, height=50)
-        self.btn_view_employees.grid(row=3, column=0, padx=20, pady=20)
+        self.btn_view_employees = ctk.CTkButton(self.nav_frame, text="View Employees", command=self.show_view_employees, width=150, height=70)
+        self.btn_view_employees.grid(row=3, column=0, padx=20, pady=30)
 
-        self.btn_search_product = ctk.CTkButton(self.nav_frame, text="Search Product", command=self.show_search_product, width=150, height=50)
-        self.btn_search_product.grid(row=4, column=0, padx=20, pady=20)
+        self.btn_search_product = ctk.CTkButton(self.nav_frame, text="Search Product", command=self.show_search_product, width=150, height=70)
+        self.btn_search_product.grid(row=4, column=0, padx=20, pady=30)
 
         self.btn_logout = ctk.CTkButton(self.nav_frame, text="Logout", command=self.confirm_logout, fg_color="red")
-        self.btn_logout.grid(row=5, column=0, padx=20, pady=20)
+        self.btn_logout.grid(row=5, column=0, padx=20, pady=50)
 
         self.content_frame = ctk.CTkFrame(self)
         self.content_frame.grid(row=0, column=2, sticky="nw", pady=90, padx=10)
@@ -509,9 +509,9 @@ def modify_employee_window(item):
 
 def load_BGImg(app, light_image_path, dark_image_path):
     try:
-        light_image = Image.open(light_image_path).resize((400, 860))
-        dark_image = Image.open(dark_image_path).resize((400, 860))
-        my_image = ctk.CTkImage(light_image=light_image, dark_image=dark_image, size=(400, 860))
+        light_image = Image.open(light_image_path).resize((400, 850))
+        dark_image = Image.open(dark_image_path).resize((400, 850))
+        my_image = ctk.CTkImage(light_image=light_image, dark_image=dark_image, size=(400, 870))
         image_label = ctk.CTkLabel(app, image=my_image, text="")
         image_label.grid(row=0, column=0, sticky="nsew")
     except IOError as e:
