@@ -155,7 +155,7 @@ class FaceRecognitionApp(ctk.CTk):
                         # Show a messagebox for successful login
                         messagebox.showinfo("Login Successful", f"Welcome, {username}!")
                         self.grant_acsses(True)
-                        sellerPaeg.initialize_seller_page("abd",self.top,self.parent)
+                        sellerPaeg.initialize_seller_page(username,self.top,self.parent)
 
                         # self.parent.destroy()
 

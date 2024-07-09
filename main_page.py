@@ -32,7 +32,7 @@ y_coordinate = (screen_height / 2) - (height_of_window / 2)
 root.geometry(f"{width_of_window}x{height_of_window}+{int(x_coordinate)}+{int(y_coordinate)}")
 
 # Set appearance mode and default color theme
-ctk.set_appearance_mode("dark")
+ctk.set_appearance_mode("white")
 ctk.set_default_color_theme("blue")
 
 # Load background image
@@ -70,8 +70,8 @@ def sign_in():
         root.destroy()
         if role == "user":
             # Import the seller page module
-            # sellerPaeg.initialize_seller_page(username) # Pass the username
-            pass
+            import sellerPaeg
+            sellerPaeg.initialize_seller_page(username,ctk.CTk(),ctk.CTk()) # Pass the username
 
         elif role == "admin": 
             # import adminpage  # Assuming you have a module for the admin page
@@ -157,10 +157,6 @@ def load_BGImg(root, light_image_path, dark_image_path):
 def clear_screen():
     for widget in root.winfo_children():
         widget.destroy()
-
-# Function to show the face sign-in top-level window
-# def show_face_signin():
-#     login.run_face_recognition_app()
 
 def face_signin_success():
     messagebox.showinfo("Face Sign-In", "Face sign-in successful!")

@@ -10,9 +10,13 @@ import csv
 import simpleaudio as sa
 from functools import partial
 from datetime import datetime, timedelta, time
+from tkinter import Canvas
+from PIL import Image, ImageTk
+
 # from login import 
 
 def initialize_seller_page(username,top,parent):
+    global detected_products
     top.destroy()
     parent.destroy()
     # Initialize the main window
@@ -23,7 +27,7 @@ def initialize_seller_page(username,top,parent):
     # Set custom colors and styles
     ctk.set_default_color_theme("dark-blue")
     ctk.set_appearance_mode("dark")
-            
+
     # Define colors
     colors = {
         "forest_green": "#228B22",
@@ -122,6 +126,11 @@ def initialize_seller_page(username,top,parent):
             conn.commit()
             cursor.close()
             status_label.configure(text="Product added successfully!")
+            bar_code = barcode_entry.get()
+            name.insert(0,"") 
+            quantity.insert(0,"") 
+            category.insert(0,"")
+            price.insert(0,"")
         except Exception as e:
             status_label.configure(text=f"Database Error: {str(e)}")
 
@@ -140,7 +149,7 @@ def initialize_seller_page(username,top,parent):
 
     # Create main content frame
     main_frame = ctk.CTkFrame(app, corner_radius=10)
-    main_frame.grid(row=0, column=1, rowspan=2, padx=20, pady=20, sticky="nsew")
+    main_frame.grid(row=1, column=5, rowspan=2, padx=20, pady=20, sticky="nsew")
 
     status_label = ctk.CTkLabel(main_frame, text="Selling Status", font=("Helvetica", 16), text_color="white")
     status_label.grid(row=1, column=0, columnspan=2, pady=10)
@@ -187,15 +196,14 @@ def initialize_seller_page(username,top,parent):
         col_label.grid(row=0, column=i, padx=5, pady=5)
 
     # List to hold detected products
-    global detected_products
     detected_products = []
 
     def update_product_table():
-        global detected_products
 
         # # Clear current content in the table
-        for widget in table_inner_frame.winfo_children():
-            widget.destroy()
+
+        # for widget in table_inner_frame.winfo_children():
+        #     widget.destroy()
 
         # Add headers
         for i, col in enumerate(columns):
@@ -208,10 +216,11 @@ def initialize_seller_page(username,top,parent):
                 if col_index == 1:  # Quantity column
                     quantity_entry = ctk.CTkEntry(table_inner_frame, width=100)
                     quantity_entry.insert(0, value)
-                    quantity_entry.grid(row=row_index, column=col_index, padx=5, pady=5)
+                    quantity_entry.grid(row=row_index, column=col_index, padx=25, pady=25)
                     quantity_entry.bind("<Return>", partial(update_quantity, row_index=row_index))
                 else:
                     data_label = ctk.CTkLabel(table_inner_frame, text=value, width=100, height=25, anchor="w", text_color="white")
+                    # print("111111111111111",value)
                     data_label.grid(row=row_index, column=col_index, padx=5, pady=5)
 
         # Calculate and display total receipt value
@@ -220,7 +229,6 @@ def initialize_seller_page(username,top,parent):
         total_receipt_label.grid(row=len(detected_products) + 1, column=0, columnspan=len(columns), padx=5, pady=5)
 
     def update_quantity(event, row_index):
-        global detected_products
         try:
             new_quantity = int(event.widget.get())
             product = list(detected_products[row_index - 1])
@@ -233,12 +241,12 @@ def initialize_seller_page(username,top,parent):
 
     # Function to read data from database based on barcode
     def read_data_base(cursor, barcode):
-        global detected_products
         try:
             query = "SELECT prod_name, quantity, category, price FROM Products WHERE bar_code = %s;"
             cursor.execute(query, (barcode,))
             product = cursor.fetchone()
-
+            barcode_entry.delete(0,'end')
+            barcode_entry.insert(0,barcode)
             if product:
                 existing_product = next((p for p in detected_products if p[0] == product[0]), None)
                 if existing_product:
@@ -250,8 +258,6 @@ def initialize_seller_page(username,top,parent):
                     detected_products.append((product[0], 1, product[2], product[3], product[3]))
                 
                 update_product_table()
-                barcode_entry.delete(0,'end')
-                barcode_entry.insert(0,barcode)
                 
             else:
                 status_label.configure(text="Product not found in database.")
@@ -259,7 +265,6 @@ def initialize_seller_page(username,top,parent):
             status_label.configure(text=f"Database Error: {str(e)}")
 
     def calculate_total_receipt():
-        global detected_products
         total = sum(product[4] for product in detected_products)
         return total
 
@@ -347,14 +352,12 @@ def initialize_seller_page(username,top,parent):
                 })
 
     def print_receipt():
-        global detected_products
         save_receipt_to_file(detected_products)
         messagebox.showinfo("Info", f"Receipt saved and printed by :{username} :\n{detected_products}")
         detected_products = []
         update_product_table()
 
     def cancel_order():
-        global detected_products
         detected_products = []
         update_product_table()
         messagebox.showinfo("Info", "Order canceled and list cleared")
@@ -366,6 +369,34 @@ def initialize_seller_page(username,top,parent):
         btn = ctk.CTkButton(bottom_frame, text=btn_text, width=80, height=30, fg_color=color, text_color="white", command=btn_command)
         btn.pack(side="left", padx=5)
 
+
+    def get_user_picture_path(username):
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT img FROM users WHERE user_name = %s", (username,))
+            result = cursor.fetchone()
+            cursor.close()
+            if result and result[0]:
+                return result[0]
+            else:
+                return None
+        except Exception as e:
+            print(f"Error retrieving user picture path: {e}")
+            return None
+
+    # Load and display the user's picture
+    user_picture_path = get_user_picture_path(username)
+    # print("22222222222222",user_picture_path)
+    if user_picture_path:
+        try:
+            # user_image = Image.open("./db/user.jpg")
+            user_image = Image.open(user_picture_path)
+            user_image = user_image.resize((350, 300), Image.ANTIALIAS)
+            user_photo = ImageTk.PhotoImage(user_image)
+            user_image_label = ctk.CTkLabel(main_frame, image=user_photo, text="")
+            user_image_label.grid(row=0, column=2, padx=40, pady=40)
+        except Exception as e:
+            print(f"Error loading user picture: {e}")
     # Run the application
     # parent.destroy()
 
