@@ -4,11 +4,15 @@
 
 
 ## welcomePage
+
 ![welcomePage](../wireframes/welcome-wireframe.png)
+
 ---
 
 ## adminPae
+
 ![adminPae](../wireframes/Admin-wireframe.png)
+
 ---
 
 ## sellerpage
