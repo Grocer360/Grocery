@@ -75,7 +75,8 @@ def sign_in():
 
         elif role == "admin": 
             # import adminpage  # Assuming you have a module for the admin page
-            pass
+            from admin import ManegerPage
+            ManegerPage(username)
         else:
             messagebox.showerror("Role Error", "Invalid role. Please try again.")
     else:

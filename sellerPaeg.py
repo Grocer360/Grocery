@@ -13,10 +13,8 @@ from datetime import datetime, timedelta, time
 from tkinter import Canvas
 from PIL import Image, ImageTk
 
-# from login import 
 
 def initialize_seller_page(username,top,parent):
-    global detected_products
     top.destroy()
     parent.destroy()
     # Initialize the main window
@@ -99,6 +97,8 @@ def initialize_seller_page(username,top,parent):
 
     # Function to add product to database
     def add_product_to_db():
+        global detected_products
+
         bar_code = barcode_entry.get()
         name = name_entry.get()
         quantity = quantity_entry.get()
@@ -196,39 +196,47 @@ def initialize_seller_page(username,top,parent):
         col_label.grid(row=0, column=i, padx=5, pady=5)
 
     # List to hold detected products
+    global detected_products
     detected_products = []
-
+    global row_widgets
+    row_widgets = {}
     def update_product_table():
+        global detected_products
 
-        # # Clear current content in the table
-
-        # for widget in table_inner_frame.winfo_children():
-        #     widget.destroy()
-
-        # Add headers
-        for i, col in enumerate(columns):
-            col_label = ctk.CTkLabel(table_inner_frame, text=col, width=100, height=25, anchor="w", text_color="white")
-            col_label.grid(row=0, column=i, padx=5, pady=5)
-        
-        # Add detected products to the table
-        for row_index, product in enumerate(detected_products, start=1):
-            for col_index, value in enumerate(product):
-                if col_index == 1:  # Quantity column
-                    quantity_entry = ctk.CTkEntry(table_inner_frame, width=100)
-                    quantity_entry.insert(0, value)
-                    quantity_entry.grid(row=row_index, column=col_index, padx=25, pady=25)
-                    quantity_entry.bind("<Return>", partial(update_quantity, row_index=row_index))
-                else:
-                    data_label = ctk.CTkLabel(table_inner_frame, text=value, width=100, height=25, anchor="w", text_color="white")
-                    # print("111111111111111",value)
-                    data_label.grid(row=row_index, column=col_index, padx=5, pady=5)
-
-        # Calculate and display total receipt value
         total_receipt = calculate_total_receipt()
-        total_receipt_label = ctk.CTkLabel(table_inner_frame, text=f"Total Receipt: {total_receipt:.2f}", width=100, height=25, anchor="w", text_color="white")
-        total_receipt_label.grid(row=len(detected_products) + 1, column=0, columnspan=len(columns), padx=5, pady=5)
+        if not total_receipt:
+            total_label = ctk.CTkLabel(table_inner_frame, text=f"Total: {0}", width=100, height=25, anchor="w", text_color="white")
+
+        for row_index, product in enumerate(detected_products, start=1):
+            if row_index not in row_widgets:
+                row_widgets[row_index] = {}
+                for col_index, value in enumerate(product):
+                    if col_index == 1:  # Quantity column
+                        quantity_entry = ctk.CTkEntry(table_inner_frame, width=100)
+                        quantity_entry.insert(0, value)
+                        quantity_entry.grid(row=row_index, column=col_index, padx=25, pady=25)
+                        quantity_entry.bind("<Return>", partial(update_quantity, row_index=row_index))
+                        row_widgets[row_index][col_index] = quantity_entry
+                    else:
+                        data_label = ctk.CTkLabel(table_inner_frame, text=value, width=100, height=25, anchor="w", text_color="white")
+                        data_label.grid(row=row_index, column=col_index, padx=25, pady=25)
+                        row_widgets[row_index][col_index] = data_label
+
+            for col_index, value in enumerate(product):
+                if col_index in row_widgets[row_index]:
+                    widget = row_widgets[row_index][col_index]
+                    if col_index == 1:  # Quantity column
+                        widget.delete(0, 'end')
+                        widget.insert(0, value)
+                    else:
+                        widget.configure(text=value)
+        # if total_label:
+        #     total_label.destroy()
+        total_label = ctk.CTkLabel(table_inner_frame, text=f"Total: ${total_receipt:.2f}", width=100, height=25, anchor="w", text_color="white")
+        total_label.grid(row=len(detected_products) + 1, column=4, padx=25, pady=25)
 
     def update_quantity(event, row_index):
+        global detected_products
         try:
             new_quantity = int(event.widget.get())
             product = list(detected_products[row_index - 1])
@@ -241,6 +249,7 @@ def initialize_seller_page(username,top,parent):
 
     # Function to read data from database based on barcode
     def read_data_base(cursor, barcode):
+        global detected_products
         try:
             query = "SELECT prod_name, quantity, category, price FROM Products WHERE bar_code = %s;"
             cursor.execute(query, (barcode,))
@@ -265,6 +274,7 @@ def initialize_seller_page(username,top,parent):
             status_label.configure(text=f"Database Error: {str(e)}")
 
     def calculate_total_receipt():
+        global detected_products
         total = sum(product[4] for product in detected_products)
         return total
 
@@ -352,15 +362,40 @@ def initialize_seller_page(username,top,parent):
                 })
 
     def print_receipt():
+        global detected_products
+        global row_widgets
+
+        # Destroy all widgets in row_widgets
+        for row in row_widgets.values():
+            for widget in row.values():
+                widget.destroy()
+
+        # Save the receipt to file and show a message
         save_receipt_to_file(detected_products)
-        messagebox.showinfo("Info", f"Receipt saved and printed by :{username} :\n{detected_products}")
+        messagebox.showinfo("Info", f"Receipt saved and printed by: {username}:\n{detected_products}")
+
+        # Clear detected products and update the table
         detected_products = []
+        row_widgets = {}
         update_product_table()
 
     def cancel_order():
+        global detected_products
+        global row_widgets
+
+        # Destroy all widgets in row_widgets
+        for row in row_widgets.values():
+            for widget in row.values():
+                widget.destroy()
+
+        # Clear detected products and update the table
         detected_products = []
+        row_widgets = {}
         update_product_table()
+
+        # Show a message
         messagebox.showinfo("Info", "Order canceled and list cleared")
+
 
     bottom_buttons = ["Cancel", "Print"]
     for btn_text in bottom_buttons:
