@@ -1,266 +1,350 @@
-import tkinter as tk
 import customtkinter as ctk
-ctk.set_appearance_mode("dark")
+from tkinter import ttk, simpledialog, messagebox
+import psycopg2
+import re
+import os
 import cv2
 from PIL import Image, ImageTk
-import os
-import psycopg2
-import re  # Import regex module for validation
-from config import Config, get_db_connection
 import util
-import logging
+from config import Config, get_db_connection
 
-class RegisterUserApp:
+class ManageUsersApp:
     def __init__(self, root):
-        self.conn_details = {
-            'dbname': "okzegkwz",
-            'user': "okzegkwz",
-            'password': "7UwFflnPy3byudSr32K1ugHniRSVK6v_",
-            'host': "kandula.db.elephantsql.com",
-            'port': "5432"
-        }
         self.root = root
-        self.root.title("Register New User")
-        self.root.geometry("800x700")
-        self.root.configure(bg='#333333')
-        self.root.resizable(False, False)
-        
+        self.root.title("Manage Users")
+        self.root.geometry("800x600")
+
         self.config = Config()
-        self.db_dir = self.config.get('db_dir', './db')
-        self.webcam_label = util.get_img_label(self.root, width=600, height=400)
-
-        # Create a frame to hold both the username and password inputs
-        self.input_frame = ctk.CTkFrame(self.root)
-        self.input_frame.pack(pady=20, padx=10)
-        
-        self.role_label = util.get_text_label(self.input_frame, text="")
-        self.role_label.pack(side=ctk.LEFT, padx=0)
-        
-        self.role_var = ctk.StringVar(value="user")  # Default role
-        self.role_dropdown = ctk.CTkOptionMenu(self.input_frame, variable=self.role_var, values=["admin", "user"])
-        self.role_dropdown.pack(side=ctk.LEFT, padx=10)
-        
-        # Create and pack the username label and entry into the frame
-        self.username_label = util.get_text_label(self.input_frame, text="")
-        self.username_label.pack(side=ctk.LEFT, padx=10)
-
-        self.username_entry = ctk.CTkEntry(self.input_frame, placeholder_text="Username")
-        self.username_entry.pack(side=ctk.LEFT, padx=10)
-        self.username_entry.bind("<KeyRelease>", self.validate_username)
-
-        # Create and pack the password label and entry into the frame
-        self.password_label = util.get_text_label(self.input_frame, text="")
-        self.password_label.pack(side=ctk.LEFT, padx=10)
-
-        self.password_entry = ctk.CTkEntry(self.input_frame, placeholder_text="Password", show='*')
-        self.password_entry.pack(side=ctk.LEFT, padx=10)
-
-        # Button for capturing image
-        self.capture_image_button = util.get_button(self.root, 'Capture Image', '#00796b', self.capture_image)
-        self.capture_image_button.pack(pady=10)
-
-        # # Button for saving user
-        self.save_user_button = util.get_button(self.root, 'Sign Up', '#00796b', self.save_user)
-        self.save_user_button.pack(pady=10)
-
         self.cap = None
         self.most_recent_capture_arr = None
-        self.captured_image_displayed = False  # Variable to check if captured image is displayed
+        self.capture_user_name = None
+
+        # Create the Treeview for displaying users
+        self.tree = ttk.Treeview(root)
+        self.tree["columns"] = ("Username", "Role", "Image")
+        self.tree.column("#0", width=0, stretch=ctk.NO)
+        self.tree.heading("#0", text="", anchor=ctk.CENTER)
+        for col in self.tree["columns"]:
+            self.tree.heading(col, text=col, anchor=ctk.CENTER)
+            self.tree.column(col, anchor=ctk.CENTER, width=200)
+
+        self.tree.pack(pady=20, fill=ctk.BOTH, expand=True)
+        self.tree.bind('<ButtonRelease-1>', self.select_item)
+
+        # Increase the Treeview font size
+        style = ttk.Style()
+        style.configure("Treeview", font=("Arial", 12), rowheight=30)
+        style.configure("Treeview.Heading", font=("Arial", 12, "bold"))
+
+        # Initialize selected user variable
+        self.selected_user = None
+
+        # Frame for buttons
+        button_frame = ctk.CTkFrame(self.root)
+        button_frame.pack(pady=10, fill=ctk.X)
+
+        # Add buttons for refreshing data, updating, and deleting users
+        self.refresh_button = util.get_button(button_frame, 'Refresh Data', '#ff9800', self.load_data)
+        self.refresh_button.pack(side=ctk.LEFT, padx=5)
+        self.update_button = util.get_button(button_frame, 'Update User', '#4CAF50', self.update_user_window)
+        self.update_button.pack(side=ctk.LEFT, padx=5)
+        self.delete_button = util.get_button(button_frame, 'Delete User', '#f44336', self.delete_user)
+        self.delete_button.pack(side=ctk.LEFT, padx=5)
+        self.update_image_button = util.get_button(button_frame, 'Update Image', '#2196F3', self.update_image_window)
+        self.update_image_button.pack(side=ctk.LEFT, padx=5)
+
+        # Frame for search entries
+        search_frame = ctk.CTkFrame(self.root)
+        search_frame.pack(pady=10, fill=ctk.X, anchor=ctk.E)
+
+        self.search_entry = ctk.CTkEntry(search_frame, placeholder_text="Search", width=200)
+        self.search_entry.pack(side=ctk.RIGHT, padx=5)
+        self.search_entry.bind("<KeyRelease>", self.search_users)
+
+        self.load_data()
+
+    def load_data(self):
+        self.clear_tree()
+
+        try:
+            conn = get_db_connection()
+            if conn is None:
+                util.msg_box("Error", "Cannot connect to the database.")
+                return
+
+            cursor = conn.cursor()
+            cursor.execute("SELECT user_name, role, img FROM Users")
+            rows = cursor.fetchall()
+
+            for row in rows:
+                self.tree.insert("", "end", values=row)
+
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error loading data: {e}")
+            util.msg_box("Error", "Failed to load data. Please try again.")
+
+    def clear_tree(self):
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+
+    def select_item(self, event):
+        item = self.tree.selection()
+        self.selected_user = self.tree.item(item, "values") if item else None
+
+        # Enable or disable buttons based on selection
+        state = ctk.NORMAL if self.selected_user else ctk.DISABLED
+        self.update_button.configure(state=state)
+        self.delete_button.configure(state=state)
+        self.update_image_button.configure(state=state)
+
+    def update_user_window(self):
+        if not self.selected_user:
+            util.msg_box("Error", "No user selected for update.")
+            return
+
+        # Create the update user window
+        self.update_window = ctk.CTkToplevel(self.root)
+        self.update_window.title("Update User")
+        self.update_window.geometry("400x300")
+
+        ctk.CTkLabel(self.update_window, text="New Username:").pack(pady=10)
+        self.new_username_entry = ctk.CTkEntry(self.update_window)
+        self.new_username_entry.pack(pady=10)
+        self.new_username_entry.insert(0, self.selected_user[0])
+
+        ctk.CTkLabel(self.update_window, text="New Role:").pack(pady=10)
+        self.new_role_combobox = ttk.Combobox(self.update_window, values=["user", "admin"], state="readonly")
+        self.new_role_combobox.pack(pady=10)
+        self.new_role_combobox.set(self.selected_user[1])
+
+        ctk.CTkButton(self.update_window, text="Update", command=self.update_user).pack(pady=20)
+
+    def update_user(self):
+        new_name = self.new_username_entry.get()
+        new_role = self.new_role_combobox.get()
+
+        if not self.validate_user_input(new_name, new_role):
+            return
+
+        try:
+            conn = get_db_connection()
+            if conn is None:
+                util.msg_box("Error", "Cannot connect to the database.")
+                return
+
+            cursor = conn.cursor()
+
+            # Check if the new username already exists, excluding the current user
+            if new_name != self.selected_user[0]:
+                cursor.execute("SELECT COUNT(*) FROM Users WHERE user_name = %s", (new_name,))
+                if cursor.fetchone()[0] > 0:
+                    util.msg_box("Error", "Username already exists.")
+                    return
+
+            old_username = self.selected_user[0]
+            old_img_path = os.path.join(self.config.get('db_dir'), f"{old_username}.jpg")
+            new_img_path = os.path.join(self.config.get('db_dir'), f"{new_name}.jpg")
+
+            # Update the database
+            cursor.execute(
+                "UPDATE Users SET user_name = %s, role = %s, img = %s WHERE user_name = %s",
+                (new_name, new_role, new_img_path, old_username)
+            )
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            # Rename the image file
+            if os.path.exists(old_img_path):
+                os.rename(old_img_path, new_img_path)
+
+            util.msg_box("Success", "User updated successfully.")
+            self.update_window.destroy()
+            self.load_data()
+        except Exception as e:
+            print(f"Error updating user: {e}")
+            util.msg_box("Error", "Failed to update user. Please try again.")
+
+    def validate_user_input(self, username, role):
+        if not username or not role:
+            util.msg_box("Error", "Username and role cannot be empty.")
+            return False
+
+        if not re.match("^[a-zA-Z0-9_]+$", username):
+            util.msg_box("Error", "Username can only contain letters, numbers, and underscores.")
+            return False
+
+        return True
+
+    def delete_user(self):
+        if not self.selected_user:
+            util.msg_box("Error", "No user selected for deletion.")
+            return
+
+        if not messagebox.askyesno("Confirm Delete", "Are you sure you want to delete this user?"):
+            return
+
+        try:
+            conn = get_db_connection()
+            if conn is None:
+                util.msg_box("Error", "Cannot connect to the database.")
+                return
+
+            cursor = conn.cursor()
+            username = self.selected_user[0]
+            img_path = os.path.join(self.config.get('db_dir'), f"{username}.jpg")
+
+            cursor.execute("DELETE FROM Users WHERE user_name = %s", (username,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            # Delete the image file
+            if os.path.exists(img_path):
+                os.remove(img_path)
+
+            util.msg_box("Success", "User deleted successfully.")
+            self.load_data()
+        except Exception as e:
+            print(f"Error deleting user: {e}")
+            util.msg_box("Error", "Failed to delete user. Please try again.")
+
+    def search_users(self, event):
+        combined_search_text = self.search_entry.get().lower()
+        print(f"Search text: {combined_search_text}")
+
+        # First, reattach all items
+        for item in self.tree.get_children():
+            self.tree.detach(item)
+
+        # Then, add only the matched items
+        try:
+            conn = get_db_connection()
+            if conn is None:
+                util.msg_box("Error", "Cannot connect to the database.")
+                return
+
+            cursor = conn.cursor()
+            cursor.execute("SELECT user_name, role, img FROM Users")
+            rows = cursor.fetchall()
+
+            for row in rows:
+                if combined_search_text in row[0].lower() or combined_search_text in row[1].lower():
+                    self.tree.insert("", "end", values=row)
+
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error searching users: {e}")
+            util.msg_box("Error", "Failed to search users. Please try again.")
+
+    def update_image_window(self):
+        if not self.selected_user:
+            util.msg_box("Error", "No user selected to update image.")
+            return
+
+        self.capture_user_name = self.selected_user[0]
+
+        self.capture_image_window = ctk.CTkToplevel(self.root)
+        self.capture_image_window.title("Capture New Image")
+        self.capture_image_window.geometry("800x600")
+
+        self.webcam_label = ctk.CTkLabel(self.capture_image_window)
+        self.webcam_label.pack(pady=20)
+
+        capture_button = ctk.CTkButton(self.capture_image_window, text="Capture Image", command=self.capture_and_save_new_image)
+        capture_button.pack(pady=20)
+
         self.start_camera()
 
     def start_camera(self):
         if self.cap is None:
             try:
-                self.cap = cv2.VideoCapture(self.config.get('camera_index', 0))
+                self.cap = cv2.VideoCapture(self.config.get('camera_index', 0))  # Change the index if needed
                 self.process_webcam()
             except Exception as e:
                 print(f"Error starting camera: {e}")
 
     def process_webcam(self):
+        """
+        Continuously capture frames from the webcam and update the webcam label.
+        """
         try:
-            if self.captured_image_displayed:
+            if self.cap is not None:
+                # Read a frame from the webcam
+                ret, frame = self.cap.read()
+
+                # If we failed to capture a frame, print an error message and schedule the next frame update
+                if not ret or frame is None:
+                    print("Failed to capture frame from camera")
+                    self.root.after(100, self.process_webcam)
+                    return
+
+                # Convert the frame to RGB (OpenCV uses BGR by default)
+                img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+                # Convert the image to a PhotoImage
+                img_pil = Image.fromarray(img_rgb)
+
+                # Create a PhotoImage from the image
+                imgtk = ImageTk.PhotoImage(image=img_pil)
+
+                # Update the webcam label with the new image
+                self.webcam_label.imgtk = imgtk
+                self.webcam_label.configure(image=imgtk)
+
+                # Update the most recent frame with the current frame
+                self.most_recent_capture_arr = frame
+
+                # Schedule the next frame update
                 self.root.after(20, self.process_webcam)
-                return
-
-            ret, frame = self.cap.read()
-            if not ret or frame is None:
-                self.root.after(100, self.process_webcam)
-                return
-
-            # Convert the frame to uint8 format (required for OpenCV operations)
-            frame = frame.astype('uint8')
-
-            # Update the most recent frame with the current frame
-            self.most_recent_capture_arr = frame
-            img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            img_pil = Image.fromarray(img_rgb)
-            imgtk = ImageTk.PhotoImage(image=img_pil)
-
-            self.webcam_label.imgtk = imgtk
-            self.webcam_label.configure(image=imgtk)
-            self.root.after(20, self.process_webcam)
         except Exception as e:
+            # If there's an error processing the webcam, print the error message
             print(f"Error processing webcam: {e}")
 
-    def capture_image(self):
+    def capture_and_save_new_image(self):
+        """
+        Capture the current frame from the webcam and save it as the user's new image.
+        """
         if self.most_recent_capture_arr is None:
-            util.msg_box("Error", "No image captured")
+            util.msg_box("Error", "No image captured!")
+            print("No image captured")
             return
 
-        username = self.username_entry.get()
-        if not username:
-            util.msg_box("Error", "Please enter a username before capturing the image.")
-            return
-
-        # Check if a face is detected before saving the image
+        # Ensure there is exactly one face detected
         faces = self.detect_face(self.most_recent_capture_arr)
-        if len(faces) == 0:
-            util.msg_box("Error", "No faces detected. Please try again.")
+        if len(faces) != 1:
+            util.msg_box("Error", "Exactly one face must be detected!")
+            print("Exactly one face must be detected")
             return
 
-        user_img_dir = os.path.join(self.db_dir)
-        if not os.path.exists(user_img_dir):
-            os.makedirs(user_img_dir)
+        user_name = self.capture_user_name
+        face_img_path = os.path.join(self.config.get('db_dir'), f"{user_name}.jpg")
 
-        img_path = os.path.join(user_img_dir, f"{username}.jpg")
-        cv2.imwrite(img_path, self.most_recent_capture_arr)
-        
-        # Display the captured image in the webcam feed
-        self.captured_image_displayed = True
-        img_rgb = cv2.cvtColor(self.most_recent_capture_arr, cv2.COLOR_BGR2RGB)
-        img_pil = Image.fromarray(img_rgb)
-        imgtk = ImageTk.PhotoImage(image=img_pil)
-        self.webcam_label.imgtk = imgtk
-        self.webcam_label.configure(image=imgtk)
+        # Save the image as JPG
+        cv2.imwrite(face_img_path, self.most_recent_capture_arr)
+        print(f"Saved new face image to {face_img_path}")
 
-        username = self.username_entry.get()
-        password = self.password_entry.get()
-        role = self.role_var.get()
+        util.msg_box("Success", f"Image for {user_name} updated successfully!")
 
-        if not username:
-            util.msg_box("Error", "Please enter a username.")
-            return
+        # Close the capture window
+        self.capture_image_window.destroy()
 
-        if not password or len(password) < 6:
-            util.msg_box("Error", "Password must be at least 6 characters long.")
-            return
-
-        # Ensure the image has been captured
-        img_path = os.path.join(self.db_dir, f"{username}.jpg")
-        if not os.path.exists(img_path):
-            util.msg_box("Error", "Please capture an image first.")
-            return
-
-        # Check if the username is unique
-        if not self.is_unique_username(username):
-            util.msg_box("Error", "Username already exists. Please choose a different one.")
-            return
-
-        # try:
-        #     conn = psycopg2.connect(**self.conn_details)
-        #     if conn is None:
-        #         util.msg_box("Error", "Cannot connect to the database.")
-        #         print("Cannot connect to the database.")
-        #         return
-
-        #     cursor = conn.cursor()
-
-        #     # Insert new user into the database
-        #     cursor.execute("""
-        #         INSERT INTO Users (user_name, password, role, logged_in, img)
-        #         VALUES (%s, %s, %s, %s, %s)
-        #     """, (username, password, role, False, img_path))
-        #     conn.commit()
-
-        #     cursor.close()
-        #     conn.close()
-
-        #     util.msg_box("Success", f"User {username} registered successfully.")
-        # except Exception as e:
-        #     print(f"Error saving new user: {e}")
-        #     util.msg_box("Error", "Failed to register new user. Please try again.")
+        # Release the camera
+        if self.cap is not None:
+            self.cap.release()
+            self.cap = None
 
     def detect_face(self, frame):
-        """
-        Detects faces in the given frame using Haar cascade classifier.
-        """
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
         return faces
-    
-    def save_user(self):
-        username = self.username_entry.get()
-        password = self.password_entry.get()
-        role = self.role_var.get()
 
-        if not username:
-            util.msg_box("Error", "Please enter a username.")
-            return
-
-        if not password or len(password) < 6:
-            util.msg_box("Error", "Password must be at least 6 characters long.")
-            return
-
-        # Ensure the image has been captured
-        img_path = os.path.join(self.db_dir, f"{username}.jpg")
-        if not os.path.exists(img_path):
-            util.msg_box("Error", "Please capture an image first.")
-            return
-
-        # Check if the username is unique
-        if not self.is_unique_username(username):
-            util.msg_box("Error", "Username already exists. Please choose a different one.")
-            return
-
-        try:
-            conn = psycopg2.connect(**self.conn_details)
-            if conn is None:
-                util.msg_box("Error", "Cannot connect to the database.")
-                print("Cannot connect to the database.")
-                return
-
-            cursor = conn.cursor()
-
-            # Insert new user into the database
-            cursor.execute("""
-                INSERT INTO Users (user_name, password, role, logged_in, img)
-                VALUES (%s, %s, %s, %s, %s)
-            """, (username, password, role, False, img_path))
-            conn.commit()
-
-            cursor.close()
-            conn.close()
-
-            util.msg_box("Success", f"User {username} registered successfully.")
-        except Exception as e:
-            print(f"Error saving new user: {e}")
-            util.msg_box("Error", "Failed to register new user. Please try again.")
-
-        # Resume the webcam feed after saving the user
-        self.captured_image_displayed = False
-        self.process_webcam()
-
-    def is_unique_username(self, username):
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            cursor.execute("SELECT user_name FROM Users WHERE user_name = %s", (username,))
-            result = cursor.fetchone()
-            cursor.close()
-            conn.close()
-            return result is None
-        except Exception as e:
-            logging.error(f"Database error: {e}")
-            return False
-
-    def validate_username(self, event):
-        username = self.username_entry.get()
-        if not re.match("^[a-zA-Z0-9]*$", username):
-            self.username_entry.delete(0, tk.END)
-            util.msg_box("Error", "Username can only contain letters and numbers.")
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = RegisterUserApp(root)
+    root = ctk.CTk()
+    app = ManageUsersApp(root)
     root.mainloop()

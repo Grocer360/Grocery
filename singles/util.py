@@ -1,10 +1,9 @@
-# util.py
-
 import customtkinter as ctk
 import os
 import pickle
 from tkinter import messagebox
 import face_recognition
+from datetime import datetime, timedelta
 
 # UI Utility Functions
 
@@ -12,7 +11,6 @@ def get_button(root, text, color, command, fg='white'):
     button = ctk.CTkButton(root, text=text, fg_color=color, command=command, text_color=fg)
     button.pack(padx=10, pady=10)
     return button
-# util.py
 
 def get_button_grid(parent, text, bg_color, command, fg="white", width=None, height=None):
     button = ctk.CTkButton(
@@ -33,6 +31,7 @@ def get_img_label(window, width=700, height=500):
     label = ctk.CTkLabel(window, width=width, height=height)
     label.pack(pady=10)  # Use pack instead of grid
     return label
+
 def get_img_label_grid(window, width, height):
     """
     Create a label for displaying images.
@@ -109,3 +108,15 @@ def recognize(img, db_path):
         return names_list[match_index]
     else:
         return 'unknown_person'
+
+def format_datetime(dt):
+    if isinstance(dt, datetime):
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
+    elif isinstance(dt, timedelta):
+        # Format timedelta as "days, HH:MM:SS"
+        days = dt.days
+        hours, remainder = divmod(dt.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        return f"{days} days, {hours:02}:{minutes:02}:{seconds:02}"
+    else:
+        return 'N/A'

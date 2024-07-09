@@ -105,26 +105,42 @@ class App:
                 print(f"Error starting camera: {e}")
 
     def process_webcam(self):
+        """
+        Continuously capture frames from the webcam and update the main window.
+        """
         try:
+            # Read a frame from the webcam
             ret, frame = self.cap.read()
+            
+            # If we failed to capture a frame, print an error message and schedule the next frame update
             if not ret or frame is None:
                 print("Failed to capture frame from camera")
                 self.main_window.after(100, self.process_webcam)
                 return
 
+            # Convert the frame to uint8 format (required for OpenCV operations)
             frame = frame.astype('uint8')  # Convert to uint8 format
 
-            self.most_recent_capture_arr = frame  # Update this with the most recent frame
+            # Update the most recent frame with the current frame
+            self.most_recent_capture_arr = frame
 
+            # Convert the frame to RGB (OpenCV uses BGR by default)
             img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+            # Convert the image to a PhotoImage
             img_pil = Image.fromarray(img_rgb)
+
+            # Create a PhotoImage from the image
             imgtk = ImageTk.PhotoImage(image=img_pil)
 
+            # Update the webcam label with the new image
             self.webcam_label.imgtk = imgtk
             self.webcam_label.configure(image=imgtk)
 
-            self.main_window.after(20, self.process_webcam)  # Schedule next frame update
+            # Schedule the next frame update
+            self.main_window.after(20, self.process_webcam)
         except Exception as e:
+            # If there's an error processing the webcam, print the error message
             print(f"Error processing webcam: {e}")
             
     def detect_face(self, frame):

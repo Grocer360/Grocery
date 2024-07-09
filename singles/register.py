@@ -136,7 +136,8 @@ class RegisterUserApp:
         username = self.username_entry.get()
         password = self.password_entry.get()
         role = self.role_var.get()
-
+        
+        
         if not username:
             util.msg_box("Error", "Please enter a username.")
             return
@@ -155,7 +156,8 @@ class RegisterUserApp:
         if not self.is_unique_username(username):
             util.msg_box("Error", "Username already exists. Please choose a different one.")
             return
-
+        
+        
     def detect_face(self, frame):
         """
         Detects faces in the given frame using Haar cascade classifier.
