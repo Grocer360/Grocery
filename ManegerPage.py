@@ -12,7 +12,6 @@ import hashlib
 from data_visualisation import DataVisualisation
 from scrollable_frame import ScrollableFrame
 from data_visualisation import DataVisualisation
-from login import initialize_login_ui
 
 
 # Initialize logging configuration
