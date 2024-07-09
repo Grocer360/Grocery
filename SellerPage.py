@@ -116,7 +116,6 @@ class SellerPage(ctk.CTk):
 
     # Function to enable fullscreen mode and disable resizing
     def fullscreen_and_disable_resize(self):
-        self.overrideredirect(True)
         self.state('zoomed')
         self.bind("<Escape>", self.exit_fullscreen)
 
@@ -494,11 +493,10 @@ class SellerPage(ctk.CTk):
             cursor.close()
     
 
-def load_BGImg(app, light_image_path, dark_image_path):
+def load_BGImg(app, light_image_path):
     try:
         light_image = Image.open(light_image_path).resize((400, 860))
-        dark_image = Image.open(dark_image_path).resize((400, 860))
-        my_image = ctk.CTkImage(light_image=light_image, dark_image=dark_image, size=(400, 860))
+        my_image = ctk.CTkImage(light_image=light_image, size=(400, 860))
         image_label = ctk.CTkLabel(app, image=my_image, text="")
         image_label.grid(row=0, column=0, sticky="nsew")
     except IOError as e:
