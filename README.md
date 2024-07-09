@@ -22,7 +22,7 @@ Purpose: Sets up initial variables, database directory, window configurations, l
 - **`save_user_data()`**: Saves user data and the captured image.
 - **`process_webcam_registration()`**: Continuously updates the registration window with webcam frames.
 - **`manage_users()`**: Creates and manages the "Manage Users" window for updating and deleting users.
-  - Dependencies: `start_capture_new_image()`, `update_user_name()`, `delete_user()`, `on_close_manage_window()`.
+- Dependencies: `start_capture_new_image()`, `update_user_name()`, `delete_user()`, `on_close_manage_window()`.
 - **`start_capture_new_image()`**: Sets up a window for capturing a new image for a user.
 - **`process_webcam_capture()`**: Continuously updates the capture window with webcam frames.
 - **`capture_and_save_new_image()`**: Captures and saves a new image for a user, updates face embeddings.
