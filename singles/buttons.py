@@ -2,9 +2,13 @@ import tkinter as tk
 import customtkinter as ctk
 from register import RegisterUserApp  # Assuming RegisterUserApp is defined in a separate file
 from manage import ManageUsersApp  # Assuming ManageUsersApp is defined in a separate file
+from login import FaceRecognitionApp
 
-def sign_up():
-    print("Sign Up clicked")
+def log_in():
+    print("Log in clicked")
+    login_window = ctk.CTk()  # Create a new top-level window using ctk.CTk
+    app = FaceRecognitionApp(login_window)  # Create an instance of FaceRecognitionApp
+    login_window.mainloop()  # Start the main loop for the login window
 
 def sign_up_with_face():
     print("Sign Up with Face clicked")
@@ -27,8 +31,8 @@ frame = ctk.CTkFrame(root)
 frame.pack(padx=50, pady=50)
 
 # Create a Sign Up button
-btn_sign_up = ctk.CTkButton(frame, text="Sign Up", width=20, command=sign_up)
-btn_sign_up.pack(pady=10)
+btn_log_in = ctk.CTkButton(frame, text="Log In", width=20, command=log_in)
+btn_log_in.pack(pady=10)
 
 # Create a Sign Up with Face button
 btn_sign_up_face = ctk.CTkButton(frame, text="Sign Up with Face", width=20, command=sign_up_with_face)

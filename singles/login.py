@@ -7,7 +7,7 @@ from PIL import Image, ImageTk
 from datetime import datetime
 import numpy as np
 import psycopg2
-from psycopg2 import sql
+import sys
 
 # Configuration
 config = {
@@ -29,6 +29,11 @@ conn_details = {
 def load_known_faces(db_dir):
     known_encodings = []
     known_names = []
+
+    if not os.listdir(db_dir):
+        messagebox.showwarning("No Data", "The database directory is empty. Please add face images.")
+        raise ValueError("The database directory is empty.")
+
     for file_name in os.listdir(db_dir):
         if file_name.endswith(".jpg") or file_name.endswith(".jpeg") or file_name.endswith(".png"):
             image_path = os.path.join(db_dir, file_name)
@@ -37,9 +42,13 @@ def load_known_faces(db_dir):
             if encoding:
                 known_encodings.append(encoding[0])
                 known_names.append(os.path.splitext(file_name)[0])
+
+    if not known_encodings or not known_names:
+        messagebox.showwarning("No Data", "No face encodings found in the database directory. Please add valid face images.")
+        raise ValueError("No face encodings found in the database directory.")
+
     return known_encodings, known_names
 
-known_encodings, known_names = load_known_faces(config["db_dir"])
 
 # Log access
 def log_access(username):
@@ -72,16 +81,6 @@ def log_to_db(username):
     except Exception as e:
         print(f"Error logging login time: {e}")
 
-# Capture image from camera
-def capture_image(camera_index):
-    cap = cv2.VideoCapture(camera_index)
-    ret, frame = cap.read()
-    cap.release()
-    if ret:
-        return frame
-    else:
-        raise RuntimeError("Failed to capture image")
-
 # Compare faces
 def compare_faces(known_encodings, face_encoding):
     matches = face_recognition.compare_faces(known_encodings, face_encoding)
@@ -93,6 +92,8 @@ def compare_faces(known_encodings, face_encoding):
 class FaceRecognitionApp(ctk.CTk):
     def __init__(self, parent=None):
         super().__init__()
+
+        self.known_encodings, self.known_names = load_known_faces(config["db_dir"])
 
         if parent is not None:
             self.parent = parent
@@ -139,9 +140,9 @@ class FaceRecognitionApp(ctk.CTk):
                     print("Face encoding generated")
                     
                     # Compare the detected face with known faces
-                    match, index = compare_faces(known_encodings, face_encoding)
+                    match, index = self.compare_faces(face_encoding)
                     if match:
-                        username = known_names[index]
+                        username = self.known_names[index]
                         log_access(username)
                         self.result_label.configure(text=f"Welcome {username}!")
                         print(f"Recognized face as {username}")
@@ -166,6 +167,12 @@ class FaceRecognitionApp(ctk.CTk):
         except Exception as e:
             print(f"Error during face recognition: {e}")
             self.result_label.configure(text=f"Error: {str(e)}")
+
+    def compare_faces(self, face_encoding):
+        matches = face_recognition.compare_faces(self.known_encodings, face_encoding)
+        face_distances = face_recognition.face_distance(self.known_encodings, face_encoding)
+        best_match_index = np.argmin(face_distances)
+        return matches[best_match_index], best_match_index
 
     def update_camera_feed(self):
         """ Continuously update the camera feed on the GUI. """
