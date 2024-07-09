@@ -1,5 +1,8 @@
 # Analysis of the Face Recogintion Code
 
+* Note : install python version 3.11.1 using *sudo apt-get install python3.11* , then  install libraries *using pip install -r requierments.txt*.
+Ensure that numpy library version is 1.26.4 using this command *pip list* and check out the numpy library version from the list.
+
 ## Main Structure of the Code
 
 ### 1. Class Definition (`App`)
