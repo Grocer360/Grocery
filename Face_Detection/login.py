@@ -12,8 +12,8 @@ import sys
 # Configuration
 config = {
     "camera_index": 0,
-    "db_dir": "./db",
-    "log_path": "./logentry.txt",
+    "db_dir": "./Face_Detection/db",
+    "log_path": "./Face_Detection/logentry.txt",
     "window_size": "1200x520+350+100"
 }
 
