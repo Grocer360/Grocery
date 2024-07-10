@@ -7,7 +7,6 @@ from PIL import Image, ImageTk
 from datetime import datetime
 import numpy as np
 import psycopg2
-import sys
 
 # Configuration
 config = {
@@ -25,7 +24,7 @@ conn_details = {
     'port': "5432"
 }
 
-# Load known faces from database
+# Load known faces from the database
 def load_known_faces(db_dir):
     known_encodings = []
     known_names = []
@@ -48,7 +47,6 @@ def load_known_faces(db_dir):
         raise ValueError("No face encodings found in the database directory.")
 
     return known_encodings, known_names
-
 
 # Log access
 def log_access(username):
@@ -89,31 +87,22 @@ def compare_faces(known_encodings, face_encoding):
     return matches[best_match_index], best_match_index
 
 # Main App
-class FaceRecognitionApp(ctk.CTk):
-    def __init__(self, parent=None):
-        super().__init__()
+class FaceRecognitionApp(ctk.CTkToplevel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.parent = parent
+        self.title("Face Recognition Login")
+        self.geometry("800x600")
 
         self.known_encodings, self.known_names = load_known_faces(config["db_dir"])
 
-        if parent is not None:
-            self.parent = parent
-            self.withdraw()  # Hide the main window
-            self.top = ctk.CTkToplevel(self.parent)
-            self.top.title("Face Recognition Login")
-            self.top.geometry("800x600")
-        else:
-            self.top = self
-
-        self.geometry("800x600")
-        self.title("Face Recognition Login")
-
-        self.camera_label = ctk.CTkLabel(self.top, text="")
+        self.camera_label = ctk.CTkLabel(self, text="")
         self.camera_label.pack(pady=20)
 
-        self.capture_button = ctk.CTkButton(self.top, text="Capture Image", command=self.on_capture)
+        self.capture_button = ctk.CTkButton(self, text="Capture Image", command=self.on_capture)
         self.capture_button.pack(pady=20)
 
-        self.result_label = ctk.CTkLabel(self.top, text="")
+        self.result_label = ctk.CTkLabel(self, text="")
         self.result_label.pack(pady=20)
 
         self.cap = cv2.VideoCapture(0)  # Change 0 to your camera index if needed
@@ -125,40 +114,40 @@ class FaceRecognitionApp(ctk.CTk):
             ret, frame = self.cap.read()
             if ret:
                 print("Frame captured successfully")
-                
+
                 # Convert the frame to RGB
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 print("Converted frame to RGB")
-                
+
                 # Find face locations in the frame
                 face_locations = face_recognition.face_locations(rgb_frame)
                 print(f"Found {len(face_locations)} face(s) in the frame")
-                
+
                 if face_locations:
                     # Get the encoding for the first detected face
                     face_encoding = face_recognition.face_encodings(rgb_frame, face_locations)[0]
                     print("Face encoding generated")
-                    
+
                     # Compare the detected face with known faces
-                    match, index = self.compare_faces(face_encoding)
+                    match, index = compare_faces(self.known_encodings, face_encoding)
                     if match:
                         username = self.known_names[index]
                         log_access(username)
                         self.result_label.configure(text=f"Welcome {username}!")
                         print(f"Recognized face as {username}")
-                        
+
                         # Show a messagebox for successful login
                         messagebox.showinfo("Login Successful", f"Welcome, {username}!")
                     else:
                         self.result_label.configure(text="Face not recognized.")
                         print("Face not recognized")
-                        
+
                         # Show a messagebox for face not recognized
                         messagebox.showwarning("Not Recognized", "Face not recognized.")
                 else:
                     self.result_label.configure(text="No face detected.")
                     print("No face detected in the frame")
-                    
+
                     # Show a messagebox for no face detected
                     messagebox.showwarning("No Face Detected", "No face detected. Please try again.")
             else:
@@ -167,12 +156,6 @@ class FaceRecognitionApp(ctk.CTk):
         except Exception as e:
             print(f"Error during face recognition: {e}")
             self.result_label.configure(text=f"Error: {str(e)}")
-
-    def compare_faces(self, face_encoding):
-        matches = face_recognition.compare_faces(self.known_encodings, face_encoding)
-        face_distances = face_recognition.face_distance(self.known_encodings, face_encoding)
-        best_match_index = np.argmin(face_distances)
-        return matches[best_match_index], best_match_index
 
     def update_camera_feed(self):
         """ Continuously update the camera feed on the GUI. """
@@ -186,5 +169,6 @@ class FaceRecognitionApp(ctk.CTk):
         self.camera_label.after(10, self.update_camera_feed)  # Refresh the feed every 10ms
 
 if __name__ == "__main__":
-    app = FaceRecognitionApp()
+    root = ctk.CTk()
+    app = FaceRecognitionApp(root)
     app.mainloop()
