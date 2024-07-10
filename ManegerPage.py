@@ -1,6 +1,7 @@
 import psycopg2
 from psycopg2 import sql
 from psycopg2 import OperationalError
+import cv2
 import ctypes
 from tkinter import *
 from tkinter import messagebox, ttk
@@ -209,14 +210,16 @@ def update_product(barCode, prod_name, price, quantity,category):
 
 # Function to add employee 
 def add_employee( user_name, role, working_hours, password):
-    if not validate_employee_input( user_name, role, working_hours, password):
-        return
+    # if not validate_employee_input( user_name, role, working_hours, password):
+    #     return
 
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()  # Hashing the password
-    execute_query("INSERT INTO users ( user_name, role,working_hours, password) VALUES (%s, %s, %s, %s)",
-                  ( user_name, role, working_hours, hashed_password))
-    log_action(f"Employee added: {user_name}")
-    messagebox.showinfo("Success", "Employee added successfully.")
+    # hashed_password = hashlib.sha256(password.encode()).hexdigest()  # Hashing the password
+    # execute_query("INSERT INTO users ( user_name, role,working_hours, password) VALUES (%s, %s, %s, %s)",
+    #               ( user_name, role, working_hours, hashed_password))
+    # log_action(f"Employee added: {user_name}")
+    # messagebox.showinfo("Success", "Employee added successfully.")
+    import register
+    register.RegisterUserApp(ctk.CTk())
 
 # Function to validate employee input fields
 def validate_employee_input(user_name, role, working_hours, password):
@@ -424,42 +427,45 @@ class ManegerPage(ctk.CTk):
 
     # Function to display the add employee form
     def show_add_employee(self):
-        self.clear_content_frame()
+        # self.clear_content_frame()
         
-        ctk.CTkLabel(self.content_frame.scrollable_frame, text="Add New Employee", font=("Arial", 24)).grid(row=0, column=0, columnspan=2, padx=20, pady=20)
+        # ctk.CTkLabel(self.content_frame.scrollable_frame, text="Add New Employee", font=("Arial", 24)).grid(row=0, column=0, columnspan=2, padx=20, pady=20)
         
-        # ctk.CTkLabel(self.content_frame.scrollable_frame, text="Employee ID:").grid(row=1, column=0, sticky="e", padx=20, pady=5)
-        # emp_id_entry = ctk.CTkEntry(self.content_frame.scrollable_frame)
-        # emp_id_entry.grid(row=1, column=1, padx=20, pady=5)
+        # # ctk.CTkLabel(self.content_frame.scrollable_frame, text="Employee ID:").grid(row=1, column=0, sticky="e", padx=20, pady=5)
+        # # emp_id_entry = ctk.CTkEntry(self.content_frame.scrollable_frame)
+        # # emp_id_entry.grid(row=1, column=1, padx=20, pady=5)
 
-        ctk.CTkLabel(self.content_frame.scrollable_frame, text="User Name:").grid(row=2, column=0, sticky="e", padx=20, pady=5)
-        user_name_entry = ctk.CTkEntry(self.content_frame.scrollable_frame)
-        user_name_entry.grid(row=2, column=1, padx=20, pady=5)
+        # ctk.CTkLabel(self.content_frame.scrollable_frame, text="User Name:").grid(row=2, column=0, sticky="e", padx=20, pady=5)
+        # user_name_entry = ctk.CTkEntry(self.content_frame.scrollable_frame)
+        # user_name_entry.grid(row=2, column=1, padx=20, pady=5)
 
-        ctk.CTkLabel(self.content_frame.scrollable_frame, text="Role:").grid(row=3, column=0, sticky="e", padx=20, pady=5)
-        role_entry = ctk.CTkEntry(self.content_frame.scrollable_frame)
-        role_entry.grid(row=3, column=1, padx=20, pady=5)
+        # ctk.CTkLabel(self.content_frame.scrollable_frame, text="Role:").grid(row=3, column=0, sticky="e", padx=20, pady=5)
+        # role_entry = ctk.CTkEntry(self.content_frame.scrollable_frame)
+        # role_entry.grid(row=3, column=1, padx=20, pady=5)
 
-        ctk.CTkLabel(self.content_frame.scrollable_frame, text="Working Hours:").grid(row=4, column=0, sticky="e", padx=20, pady=5)
-        working_hours_entry = ctk.CTkEntry(self.content_frame.scrollable_frame)
-        working_hours_entry.grid(row=4, column=1, padx=20, pady=5)
+        # ctk.CTkLabel(self.content_frame.scrollable_frame, text="Working Hours:").grid(row=4, column=0, sticky="e", padx=20, pady=5)
+        # working_hours_entry = ctk.CTkEntry(self.content_frame.scrollable_frame)
+        # working_hours_entry.grid(row=4, column=1, padx=20, pady=5)
 
-        ctk.CTkLabel(self.content_frame.scrollable_frame, text="Password:").grid(row=5, column=0, sticky="e", padx=20, pady=5)
-        password_entry = ctk.CTkEntry(self.content_frame.scrollable_frame, show="*")
-        password_entry.grid(row=5, column=1, padx=20, pady=5)
+        # ctk.CTkLabel(self.content_frame.scrollable_frame, text="Password:").grid(row=5, column=0, sticky="e", padx=20, pady=5)
+        # password_entry = ctk.CTkEntry(self.content_frame.scrollable_frame, show="*")
+        # password_entry.grid(row=5, column=1, padx=20, pady=5)
 
-        def submit():
-            try:
-                # emp_id = int(emp_id_entry.get())
-                user_name = user_name_entry.get()
-                role = role_entry.get()
-                working_hours = (working_hours_entry.get())
-                password = password_entry.get()
-                add_employee( user_name, role, working_hours, password)
-            except ValueError:
-                messagebox.showerror("Error", "Please enter valid numeric values for Employee ID and Working Hours")
+        import register
+        register.RegisterUserApp(ctk.CTk())
 
-        ctk.CTkButton(self.content_frame.scrollable_frame, text="Add Employee", command=submit).grid(row=6, column=0, columnspan=2, padx=20, pady=20)
+        # def submit():
+        #     try:
+        #         # emp_id = int(emp_id_entry.get())
+        #         user_name = user_name_entry.get()
+        #         role = role_entry.get()
+        #         working_hours = (working_hours_entry.get())
+        #         password = password_entry.get()
+        #         add_employee( user_name, role, working_hours, password)
+        #     except ValueError:
+        #         messagebox.showerror("Error", "Please enter valid numeric values for Employee ID and Working Hours")
+
+        # ctk.CTkButton(self.content_frame.scrollable_frame, text="Add Employee", command=submit).grid(row=6, column=0, columnspan=2, padx=20, pady=20)
 
     # Function to display the products list
     def show_view_products(self):
