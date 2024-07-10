@@ -36,8 +36,8 @@ label2.place(x=10,y=215)
 
 #making animation
 
-image_a=ImageTk.PhotoImage(Image.open('assets\c2.png'))
-image_b=ImageTk.PhotoImage(Image.open('assets\c1.png'))
+image_a=ImageTk.PhotoImage(Image.open('./assets\c2.png'))
+image_b=ImageTk.PhotoImage(Image.open('./assets\c1.png'))
 
 
 

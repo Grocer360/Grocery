@@ -11,6 +11,8 @@ import csv
 import hashlib
 from data_visualisation  import DataVisualisation
 from scrollable_frame import ScrollableFrame 
+from register import RegisterUserApp
+from manage import ManageUsersApp
 
 
 
@@ -335,13 +337,13 @@ class ManegerPage(ctk.CTk):
         self.btn_add_product = ctk.CTkButton(self.nav_frame, text="Add Product", command=self.show_add_product, width=150, height=50)
         self.btn_add_product.grid(row=0, column=0, padx=20, pady=20)
 
-        self.btn_add_employee = ctk.CTkButton(self.nav_frame, text="Add Employee", command=self.show_add_employee, width=150, height=50)
+        self.btn_add_employee = ctk.CTkButton(self.nav_frame, text="Register Users", command=self.show_add_employee, width=150, height=50)
         self.btn_add_employee.grid(row=1, column=0, padx=20, pady=20)
 
         self.btn_view_products = ctk.CTkButton(self.nav_frame, text="View Products", command=self.show_view_products, width=150, height=50)
         self.btn_view_products.grid(row=2, column=0, padx=20, pady=20)
 
-        self.btn_view_employees = ctk.CTkButton(self.nav_frame, text="View Employees", command=self.show_view_employees, width=150, height=50)
+        self.btn_view_employees = ctk.CTkButton(self.nav_frame, text="Mnage Users", command=self.show_view_employees, width=150, height=50)
         self.btn_view_employees.grid(row=3, column=0, padx=20, pady=20)
 
         # self.btn_search_product = ctk.CTkButton(self.nav_frame, text="Search Product", command=self.show_search_product, width=150, height=50)
@@ -427,7 +429,13 @@ class ManegerPage(ctk.CTk):
 
     # Function to display the add employee form
     def show_add_employee(self):
-        self.clear_content_frame()
+        try:
+            print("Sign Up with Face clicked")
+            register_window = ctk.CTkToplevel()  # Create a new top-level window using ctk.CTkToplevel
+            app = RegisterUserApp(register_window)  # Create an instance of RegisterUserApp
+            register_window.mainloop()  # Start the main loop for the registration window
+        except Exception as e:
+            print(f"Error during sign up with face: {e}")
         
         ctk.CTkLabel(self.content_frame.scrollable_frame, text="Add New Employee", font=("Arial", 24)).grid(row=0, column=0, columnspan=2, padx=20, pady=20)
         
@@ -548,69 +556,28 @@ class ManegerPage(ctk.CTk):
         ctk.CTkButton(self.content_frame.scrollable_frame, text="Delete Product", command=delete, fg_color="red").grid(row=6, column=0, padx=20, pady=10)
 
                 
+    import psycopg2
+    from psycopg2 import OperationalError
+    conn = psycopg2.connect(
+        dbname="okzegkwz",
+        user="okzegkwz",
+        password="7UwFflnPy3byudSr32K1ugHniRSVK6v_",
+        host="kandula.db.elephantsql.com",
+        port="5432"
+    )
     # Function to display the employees list
     def show_view_employees(self):
-        self.clear_content_frame()
-        try: 
-            import psycopg2
-            from psycopg2 import OperationalError
-            conn = psycopg2.connect(
-                dbname="okzegkwz",
-                user="okzegkwz",
-                password="7UwFflnPy3byudSr32K1ugHniRSVK6v_",
-                host="kandula.db.elephantsql.com",
-                port="5432"
-            )
-            query = "SELECT user_name, role,working_hours FROM users;"
-            c = conn.cursor()
-            c.execute(query)
-            employees = c.fetchall()
-            conn.close()
-            ctk.CTkLabel(self.content_frame.scrollable_frame, text="Employees List", font=("Arial", 24)).grid(row=0, column=0, padx=20, pady=20)
 
-            treeview = ttk.Treeview(self.content_frame.scrollable_frame, columns=( "User Name", "Role", "Working Hours"), show="headings")
-            # treeview.heading("ID", text="ID")
-            treeview.heading("User Name", text="User Name")
-            treeview.heading("Role", text="Role")
-            treeview.heading("Working Hours", text="Working Hours")
+        try:
+            print("Manage clicked")
+            manage_window = ctk.CTkToplevel()  # Create a new top-level window using ctk.CTkToplevel
+            app = ManageUsersApp(manage_window)  # Create an instance of ManageUsersApp
+            manage_window.mainloop()  # Start the main loop for the management window
+        except Exception as e:
+            print(f"Error during manage: {e}")
+       
 
-            treeview.grid(row=1, column=0, padx=20, pady=20, sticky="nsew")
-            self.content_frame.scrollable_frame.grid_rowconfigure(1, weight=1)
-            self.content_frame.scrollable_frame.grid_columnconfigure(0, weight=1)
-
-        
-            for employee in employees:
-                treeview.insert("", "end", values=employee)
-                
-        except OperationalError as e:
-            print(f"Database Error: {e}")
-            # Handle the database operational error as needed
-
-        def export():
-            export_to_csv(employees, "employees.csv")
-            messagebox.showinfo("Success", "Employees exported successfully.")
-
-        def delete():
-            selected_item = treeview.selection()
-            if selected_item:
-                item = treeview.item(selected_item)['values']
-                confirm_delete_employee(item[0], item[1])
-                treeview.delete(selected_item)
-            else:
-                messagebox.showwarning("Delete Error", "Please select an employee to delete.")
-
-        def modify():
-            selected_item = treeview.selection()
-            if selected_item:
-                item = treeview.item(selected_item)['values']
-                modify_employee_window(item)
-            else:
-                messagebox.showwarning("Modify Error", "Please select an employee to modify.")
-
-
-        ctk.CTkButton(self.content_frame.scrollable_frame, text="Delete Employee", command=delete, fg_color='red').grid(row=2, column=0, padx=20, pady=10)
-        ctk.CTkButton(self.content_frame.scrollable_frame, text="Modify Employee", command=modify).grid(row=3, column=0, padx=20, pady=10)
-        ctk.CTkButton(self.content_frame.scrollable_frame, text="Export to CSV", command=export).grid(row=4, column=0, padx=20, pady=10)
+       
 
     # Function to clear the content frame
     def clear_content_frame(self):
@@ -620,12 +587,55 @@ class ManegerPage(ctk.CTk):
             
 
     # Function to confirm logout
-    def confirm_logout(self):
-        result = messagebox.askyesno("Logout", "Are you sure you want to logout?")
-        if result:
-            self.initialize_login_ui()
-            self
 
+    def confirm_logout(self):
+        try:
+            import datetime
+            import logging
+            logging.info("Attempting to log out user: %s", self.username)
+            cursor = self.conn.cursor()
+            current_time = datetime.datetime.now()
+            logging.info("Current time: %s", current_time)
+
+            # Update time_stamp_out with current_time
+            cursor.execute("""
+                UPDATE users
+                SET time_stamp_out = %s
+                WHERE user_name = %s;
+            """, (current_time, self.username))
+
+            # Verify if the update worked
+            cursor.execute("SELECT time_stamp_out FROM users WHERE user_name = %s;", (self.username,))
+            result = cursor.fetchone()
+            logging.info("Updated time_stamp_out: %s", result)
+
+            # Update working_hours using INTERVAL
+            cursor.execute("""
+                UPDATE users
+                SET working_hours = COALESCE(working_hours, '0'::interval) + (time_stamp_out - time_stamp_in)
+                WHERE user_name = %s;
+            """, (self.username,))
+            self.conn.commit()
+            self.cursor.close()
+            
+            messagebox.showinfo("Logout", "Logged out successfully!")
+
+        except Exception as e:
+            self.conn.rollback()  # Rollback transaction on error to maintain data integrity
+            logging.error("Logout Error: %s", str(e))
+            messagebox.showerror("Logout Error", f"Logout Error: {str(e)}")
+
+        finally:
+            logging.info("Destroying the current window and redirecting to the login page.")
+            self.destroy()
+            try:
+                import main_page
+                main_page.initialize_login_ui(self)
+            except Exception as e:
+                logging.error("Redirection Error: %s", str(e))
+                messagebox.showerror("Redirection Error", f"Redirection Error: {str(e)}")
+
+            
 def load_BGImg(app, light_image_path):
     try:
         light_image = Image.open(light_image_path).resize((300, 860))

@@ -8,7 +8,7 @@ from login import FaceRecognitionApp
 
 # Database connection details (ElephantSQL)
 conn_details = {
-    "dbname": "okzegkwz", 
+    "dbname": "okzegkwz",
     "user": "okzegkwz",
     "password": "7UwFflnPy3byudSr32K1ugHniRSVK6v_",
     "host": "kandula.db.elephantsql.com",
@@ -36,7 +36,8 @@ ctk.set_appearance_mode("white")
 ctk.set_default_color_theme("blue")
 
 # Load background image
-bg = tk.PhotoImage(file="./assets/background.png")
+bg_image_path = "./assets/background.png"
+bg = ImageTk.PhotoImage(file=bg_image_path)  # Keep a reference to the image
 canvas1 = tk.Canvas(root)
 canvas1.pack(fill="both", expand=True)
 canvas1.create_image(0, 0, image=bg, anchor="nw")
@@ -60,7 +61,6 @@ def verify_login(username, password, role):
         return False
 
 # Function to handle sign-in
-# Function to handle sign-in
 def sign_in():
     username = username_entry.get()
     password = password_entry.get()
@@ -71,11 +71,10 @@ def sign_in():
         if role == "user":
             # Import the seller page module
             import sellarpaeg
-            sellarpaeg.initialize_seller_page(username,ctk.CTk(),ctk.CTk()) # Pass the username
+            sellarpaeg.initialize_seller_page(username, ctk.CTk(), ctk.CTk())  # Pass the username
 
-        elif role == "admin": 
-            # import adminpage  # Assuming you have a module for the admin page
-            from adminPage.ManegerPage import ManegerPage
+        elif role == "admin":
+            from ManegerPage import ManegerPage
             ManegerPage(username)
         else:
             messagebox.showerror("Role Error", "Invalid role. Please try again.")
@@ -88,11 +87,11 @@ def openFaceLogin():
 
 # Function to show the login UI
 def initialize_login_ui(root):
-    global username_entry, password_entry, role_var
+    global username_entry, password_entry, role_var, icon_photo  # Add icon_photo to global variables
 
     clear_screen()
 
-    load_BGImg(root, './assets/background.png', './assets/background.png')
+    load_BGImg(root, bg_image_path, bg_image_path)
     load_logoImg(root, "./assets/logo.png", "./assets/logo.png")
 
     ctk.CTkLabel(root, text="Username", font=("Helvetica", 16)).pack(pady=10)
@@ -111,8 +110,8 @@ def initialize_login_ui(root):
 
     # Load and resize the icon for face sign-in button
     icon_image = Image.open("./assets/camera.png")
-    icon_image = icon_image.resize((25, 25), Image.Resampling.LANCZOS)  # Resize the icon
-    icon_photo = ImageTk.PhotoImage(icon_image)
+    icon_image = icon_image.resize((25, 25), Image.LANCZOS)  # Resize the icon
+    icon_photo = ctk.CTkImage(light_image=icon_image)
 
     # Define the face sign-in button with the resized icon
     face_signin_button = ctk.CTkButton(

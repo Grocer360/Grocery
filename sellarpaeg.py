@@ -69,9 +69,9 @@ def initialize_seller_page(username,top,parent):
             # Update time_stamp_out with current_time
             cursor.execute("""
                 UPDATE users
-                SET time_stamp_out = %s
+                SET logged_in=%s,time_stamp_out = %s
                 WHERE user_name = %s;
-            """, (current_time, username))
+            """, (False,current_time, username))
 
             # Update working_hours using INTERVAL
             cursor.execute("""
@@ -283,7 +283,7 @@ def initialize_seller_page(username,top,parent):
             update_product_table()  # Refresh the table
 
         except ValueError:
-            status_label.configure(text="Invalid quantity entered.")
+            messagebox.showerror("Error", "Invalid quantity entered.")
     # Function to read data from database based on barcode
     def read_data_base(cursor, barcode):
         global detected_products, low_stock_warnings
@@ -329,7 +329,7 @@ def initialize_seller_page(username,top,parent):
                 update_product_table()
 
             else:
-                status_label.configure(text="Product not found in database.")
+                  messagebox.showwarning("Warning", "Product not found in database.")
         except Exception as e:
             status_label.configure(text=f"Database Error: {str(e)}")
 
