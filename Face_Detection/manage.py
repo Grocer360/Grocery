@@ -12,9 +12,11 @@ class ManageUsersApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Manage Users")
-        self.root.geometry("800x600")
+        self.root.geometry("850x350")
+        self.root.resizable(False, False)
 
         self.config = Config()
+        self.db_dir = self.config.get('db_dir', './Face_Detection/db')
         self.cap = None
         self.most_recent_capture_arr = None
         self.capture_user_name = None
@@ -28,7 +30,7 @@ class ManageUsersApp:
             self.tree.heading(col, text=col, anchor=ctk.CENTER)
             self.tree.column(col, anchor=ctk.CENTER, width=200)
 
-        self.tree.pack(pady=20, fill=ctk.BOTH, expand=True)
+        self.tree.grid(row=0, column=0, columnspan=2, padx=20, pady=20, sticky="nsew")
         self.tree.bind('<ButtonRelease-1>', self.select_item)
 
         # Increase the Treeview font size
@@ -41,24 +43,20 @@ class ManageUsersApp:
 
         # Frame for buttons
         button_frame = ctk.CTkFrame(self.root)
-        button_frame.pack(pady=10, fill=ctk.X)
+        button_frame.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
 
         # Add buttons for refreshing data, updating, and deleting users
-        self.refresh_button = util.get_button(button_frame, 'Refresh Data', '#ff9800', self.load_data)
-        self.refresh_button.pack(side=ctk.LEFT, padx=5)
-        self.update_button = util.get_button(button_frame, 'Update User', '#4CAF50', self.update_user_window)
-        self.update_button.pack(side=ctk.LEFT, padx=5)
-        self.delete_button = util.get_button(button_frame, 'Delete User', '#f44336', self.delete_user)
-        self.delete_button.pack(side=ctk.LEFT, padx=5)
-        self.update_image_button = util.get_button(button_frame, 'Update Image', '#2196F3', self.update_image_window)
-        self.update_image_button.pack(side=ctk.LEFT, padx=5)
+        self.refresh_button = util.get_button(button_frame, 'Refresh Data', '#ff9800', self.load_data, row=0, column=0, padx=5)
+        self.update_button = util.get_button(button_frame, 'Update User', '#4CAF50', self.update_user_window, row=0, column=1, padx=5)
+        self.delete_button = util.get_button(button_frame, 'Delete User', '#f44336', self.delete_user, row=0, column=2, padx=5)
+        self.update_image_button = util.get_button(button_frame, 'Update Image', '#2196F3', self.update_image_window, row=0, column=3, padx=5)
 
         # Frame for search entries
         search_frame = ctk.CTkFrame(self.root)
-        search_frame.pack(pady=10, fill=ctk.X, anchor=ctk.E)
+        search_frame.grid(row=1, column=1, padx=10, pady=10, sticky="ew")
 
         self.search_entry = ctk.CTkEntry(search_frame, placeholder_text="Search", width=200)
-        self.search_entry.pack(side=ctk.RIGHT, padx=5)
+        self.search_entry.grid(row=0, column=0, padx=5, pady=5, sticky="e")
         self.search_entry.bind("<KeyRelease>", self.search_users)
 
         self.load_data()
@@ -103,23 +101,24 @@ class ManageUsersApp:
         if not self.selected_user:
             util.msg_box("Error", "No user selected for update.")
             return
-
+            
         # Create the update user window
         self.update_window = ctk.CTkToplevel(self.root)
         self.update_window.title("Update User")
-        self.update_window.geometry("400x300")
+        self.update_window.geometry("300x170")
+        self.update_window.resizable(False, False)
 
-        ctk.CTkLabel(self.update_window, text="New Username:").pack(pady=10)
+        ctk.CTkLabel(self.update_window, text="New Username:").grid(row=0, column=0, padx=10, pady=10)
         self.new_username_entry = ctk.CTkEntry(self.update_window)
-        self.new_username_entry.pack(pady=10)
+        self.new_username_entry.grid(row=0, column=1, padx=10, pady=10)
         self.new_username_entry.insert(0, self.selected_user[0])
 
-        ctk.CTkLabel(self.update_window, text="New Role:").pack(pady=10)
+        ctk.CTkLabel(self.update_window, text="New Role:").grid(row=1, column=0, padx=10, pady=10)
         self.new_role_combobox = ttk.Combobox(self.update_window, values=["user", "admin"], state="readonly")
-        self.new_role_combobox.pack(pady=10)
+        self.new_role_combobox.grid(row=1,rowspan=2, column=1,columnspan=2, padx=10, pady=10)
         self.new_role_combobox.set(self.selected_user[1])
 
-        ctk.CTkButton(self.update_window, text="Update", command=self.update_user).pack(pady=20)
+        ctk.CTkButton(self.update_window, text="Update", command=self.update_user).grid(row=3, column=0, columnspan=2, pady=20)
 
     def update_user(self):
         new_name = self.new_username_entry.get()
@@ -249,13 +248,14 @@ class ManageUsersApp:
 
         self.capture_image_window = ctk.CTkToplevel(self.root)
         self.capture_image_window.title("Capture New Image")
-        self.capture_image_window.geometry("800x600")
-
+        self.capture_image_window.geometry("550x500")
+        self.capture_image_window.resizable(False, False)
+        
         self.webcam_label = ctk.CTkLabel(self.capture_image_window)
-        self.webcam_label.pack(pady=20)
+        self.webcam_label.grid(row=0, column=0, padx=20, pady=20)
 
         capture_button = ctk.CTkButton(self.capture_image_window, text="Capture Image", command=self.capture_and_save_new_image)
-        capture_button.pack(pady=20)
+        capture_button.grid(row=1, column=0, padx=20, pady=20)
 
         self.start_camera()
 
