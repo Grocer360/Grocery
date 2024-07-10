@@ -1,3 +1,14 @@
 ProdName,Quantity,Category,Price,Total,Seller,Time
 spagheti,4,food,1.50,6.00,userAbd,2024-07-10 14:48:53.653175
 tomato,4,vegetables,0.12,0.48,userAbd,2024-07-10 14:48:53.653175
+potato,1,vegetables,0.45,0.45,userAbd,2024-07-10 15:07:38.346869
+spagheti,2,food,1.50,3.00,userAbd,2024-07-10 15:07:38.346869
+spagheti,2,food,1.50,3.00,user,2024-07-10 23:18:07.089950
+spagheti,2,food,1.50,3.00,user,2024-07-11 00:03:07.644482
+tomato,11,vegetables,0.12,1.32,user,2024-07-11 00:03:07.644482
+abd,1,handsome BOY,999999.00,999999.00,user,2024-07-11 00:03:07.644482
+tomato,2,vegetables,0.12,0.24,user,2024-07-11 00:05:11.515610
+spagheti,1,food,1.50,1.50,user,2024-07-11 00:05:11.515610
+spagheti,2,food,1.50,3.00,user,2024-07-11 00:14:41.980053
+tomato,2,vegetables,0.12,0.24,user,2024-07-11 00:14:41.980053
+spagheti,2,food,0.40,0.80,test,2024-07-11 00:27:39.708397

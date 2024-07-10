@@ -84,7 +84,9 @@ def sign_in():
 
 def openFaceLogin():
     face_recognition_app = FaceRecognitionApp(root)
+    # face_recognition_app = ctk.CTkToplevel(root)
     face_recognition_app.mainloop()
+    root.destroy()
 
 # Function to show the login UI
 def initialize_login_ui(root):
