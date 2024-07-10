@@ -9,7 +9,7 @@ import customtkinter as ctk
 import logging
 import csv
 import hashlib
-from data_visualisation import DataVisualisation
+from data_visualisation  import DataVisualisation
 from scrollable_frame import ScrollableFrame 
 
 
@@ -330,7 +330,7 @@ class ManegerPage(ctk.CTk):
         self.content_frame = ScrollableFrame(self)
         self.content_frame.grid(row=0, column=2, sticky="nsew", padx=20, pady=90)
 
-        load_BGImg(self, '../assets/AdminBG.png')
+        load_BGImg(self, './assets/AdminBG.png')
 
         self.btn_add_product = ctk.CTkButton(self.nav_frame, text="Add Product", command=self.show_add_product, width=150, height=50)
         self.btn_add_product.grid(row=0, column=0, padx=20, pady=20)

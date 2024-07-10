@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import font
 from PIL import ImageTk, Image 
 import time
+import customtkinter as ctk
 
 
 w=Tk()
@@ -21,6 +22,7 @@ w.overrideredirect(1) #for hiding titlebar
 def new_win():
     
     from main_page import initialize_login_ui
+    initialize_login_ui(w)
    
 
 Frame(w, width=427, height=250, bg='#272727').place(x=0,y=0)
@@ -72,5 +74,5 @@ for i in range(5): #5loops
 
 
 w.destroy()
-# new_win()
+new_win()
 w.mainloop()

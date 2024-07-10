@@ -132,7 +132,7 @@ We welcome contributions to the Grocery Management System! If you'd like to cont
 
 ## for the task
 
->>>>>>> origin/main
+
 # Grocery
 
 ## wire-frames

@@ -10,7 +10,7 @@ class DataVisualisation(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
 
         # Load the CSV file into a DataFrame
-        df = pd.read_csv('fake_data.csv')  # Adjust the path if necessary
+        df = pd.read_csv('./fake_data.csv')  # Adjust the path if necessary
 
         # Most selling category and the lowest (pie chart)
         category_sales = df.groupby('Category')['Quantity'].sum()
