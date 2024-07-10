@@ -1,0 +1,301 @@
+ProdName,Quantity,Category,Price,Total,Employee,Date
+chicken,18,Meat and poultry,10.14,182.52,Omar,2023-01-14
+yogurt,3,Dairy foods,6.22,18.66,Omar,2023-01-30
+grape,19,Fruits,3.33,63.27,Rame,2023-01-06
+butter,10,Dairy foods,7.25,72.5,Omar,2023-01-01
+orange,11,Fruits,9.54,104.94,Rame,2023-01-15
+pork,18,Meat and poultry,19.77,355.86,Rame,2023-01-06
+potato,14,Vegetables,5.75,80.5,Ali,2023-01-11
+beef,10,Meat and poultry,14.92,149.2,Ali,2023-01-23
+banana,15,Fruits,16.99,254.85,Ali,2023-01-22
+milk,11,Dairy foods,1.45,15.95,Rame,2023-01-10
+potato,7,Vegetables,10.12,70.84,Rame,2023-01-17
+cookies,13,Snacks,11.58,150.54,Omar,2023-01-16
+cheese,1,Dairy foods,6.29,6.29,Rame,2023-01-20
+milk,10,Dairy foods,5.61,56.1,Omar,2023-01-08
+chicken,6,Meat and poultry,16.55,99.3,Ali,2023-01-18
+turkey,2,Meat and poultry,0.54,1.08,Omar,2023-01-30
+banana,7,Fruits,19.54,136.78,Omar,2023-01-15
+candy,16,Snacks,18.68,298.88,Rame,2023-01-28
+chicken,14,Meat and poultry,16.44,230.16,Rame,2023-01-14
+chicken,3,Meat and poultry,12.57,37.71,Ali,2023-01-11
+turkey,15,Meat and poultry,17.11,256.65,Omar,2023-01-20
+beef,10,Meat and poultry,19.36,193.6,Omar,2023-01-21
+yogurt,1,Dairy foods,4.11,4.11,Omar,2023-01-26
+butter,11,Dairy foods,10.04,110.44,Omar,2023-01-07
+chicken,6,Meat and poultry,14.94,89.64,Rame,2023-01-15
+apple,20,Fruits,5.58,111.6,Ali,2023-01-18
+chips,3,Snacks,15.72,47.16,Ali,2023-01-24
+carrot,6,Vegetables,6.02,36.12,Rame,2023-01-02
+chips,2,Snacks,14.43,28.86,Ali,2023-01-30
+apple,15,Fruits,2.22,33.3,Ali,2023-01-15
+grape,2,Fruits,12.7,25.4,Omar,2023-01-09
+beef,12,Meat and poultry,9.88,118.56,Omar,2023-01-27
+butter,11,Dairy foods,14.21,156.31,Ali,2023-01-23
+butter,11,Dairy foods,1.25,13.75,Omar,2023-01-29
+turkey,15,Meat and poultry,7.09,106.35,Rame,2023-01-10
+apple,5,Fruits,13.71,68.55,Rame,2023-01-17
+milk,13,Dairy foods,14.53,188.89,Omar,2023-01-18
+carrot,5,Vegetables,5.23,26.15,Rame,2023-01-30
+banana,18,Fruits,15.77,283.86,Ali,2023-01-03
+chips,11,Snacks,6.08,66.88,Omar,2023-01-10
+chicken,2,Meat and poultry,0.77,1.54,Omar,2023-01-06
+carrot,2,Vegetables,1.07,2.14,Ali,2023-01-09
+cheese,4,Dairy foods,8.79,35.16,Ali,2023-01-15
+butter,18,Dairy foods,15.81,284.58,Ali,2023-01-12
+chips,19,Snacks,7.44,141.36,Omar,2023-01-12
+butter,15,Dairy foods,15.46,231.9,Rame,2023-01-26
+butter,12,Dairy foods,11.97,143.64,Rame,2023-01-28
+chicken,3,Meat and poultry,5.29,15.87,Omar,2023-01-03
+banana,16,Fruits,7.64,122.24,Ali,2023-01-07
+candy,17,Snacks,2.84,48.28,Ali,2023-01-21
+pork,2,Meat and poultry,3.54,7.08,Rame,2023-01-11
+orange,8,Fruits,18.54,148.32,Ali,2023-01-08
+cookies,14,Snacks,19.94,279.16,Ali,2023-01-09
+cheese,4,Dairy foods,6.65,26.6,Rame,2023-01-10
+chips,2,Snacks,5.32,10.64,Omar,2023-01-26
+beef,7,Meat and poultry,9.92,69.44,Omar,2023-01-05
+orange,10,Fruits,17.54,175.4,Ali,2023-01-22
+grape,16,Fruits,13.07,209.12,Rame,2023-01-17
+beef,13,Meat and poultry,13.44,174.72,Ali,2023-01-09
+grape,17,Fruits,10.54,179.18,Rame,2023-01-13
+chocolate,12,Snacks,17.46,209.52,Rame,2023-01-08
+yogurt,1,Dairy foods,8.89,8.89,Rame,2023-01-19
+orange,8,Fruits,3.85,30.8,Omar,2023-01-03
+spinach,10,Vegetables,0.84,8.4,Ali,2023-01-01
+yogurt,9,Dairy foods,19.06,171.54,Omar,2023-01-19
+grape,10,Fruits,3.73,37.3,Rame,2023-01-06
+carrot,2,Vegetables,9.01,18.02,Omar,2023-01-03
+beef,9,Meat and poultry,14.84,133.56,Ali,2023-01-12
+chips,16,Snacks,14.18,226.88,Omar,2023-01-02
+spinach,6,Vegetables,9.27,55.62,Rame,2023-01-27
+cheese,12,Dairy foods,11.86,142.32,Rame,2023-01-01
+pork,18,Meat and poultry,10.62,191.16,Rame,2023-01-18
+spinach,9,Vegetables,6.13,55.17,Rame,2023-01-14
+banana,4,Fruits,14.09,56.36,Ali,2023-01-21
+butter,1,Dairy foods,2.2,2.2,Rame,2023-01-10
+pork,12,Meat and poultry,8.2,98.4,Rame,2023-01-05
+chicken,14,Meat and poultry,9.5,133,Ali,2023-01-30
+broccoli,10,Vegetables,6.57,65.7,Ali,2023-01-26
+apple,3,Fruits,12.16,36.48,Omar,2023-01-26
+apple,10,Fruits,1.35,13.5,Omar,2023-01-08
+orange,9,Fruits,6.09,54.81,Omar,2023-01-02
+grape,17,Fruits,18.24,310.08,Rame,2023-01-10
+apple,1,Fruits,13.26,13.26,Ali,2023-01-17
+beef,13,Meat and poultry,5.41,70.33,Rame,2023-01-10
+broccoli,7,Vegetables,7.45,52.15,Rame,2023-01-25
+broccoli,3,Vegetables,14.76,44.28,Ali,2023-01-09
+potato,17,Vegetables,5.78,98.26,Rame,2023-01-29
+orange,1,Fruits,11.75,11.75,Omar,2023-01-14
+milk,13,Dairy foods,9.15,118.95,Rame,2023-01-26
+carrot,15,Vegetables,17.38,260.7,Ali,2023-01-06
+banana,7,Fruits,5.09,35.63,Ali,2023-01-13
+orange,11,Fruits,17.72,194.92,Omar,2023-01-21
+candy,4,Snacks,1.52,6.08,Rame,2023-01-05
+turkey,6,Meat and poultry,2.33,13.98,Ali,2023-01-04
+potato,2,Vegetables,14.26,28.52,Rame,2023-01-30
+butter,15,Dairy foods,15.72,235.8,Ali,2023-01-22
+potato,3,Vegetables,14.64,43.92,Omar,2023-01-02
+carrot,13,Vegetables,17.25,224.25,Ali,2023-01-12
+cheese,20,Dairy foods,1.2,24,Ali,2023-01-14
+cheese,9,Dairy foods,17.69,159.21,Rame,2023-01-23
+carrot,6,Vegetables,17.36,104.16,Ali,2023-01-08
+butter,15,Dairy foods,7.54,113.1,Omar,2023-01-06
+beef,4,Meat and poultry,17.57,70.28,Ali,2023-01-03
+orange,13,Fruits,8.49,110.37,Rame,2023-01-13
+beef,9,Meat and poultry,9.06,81.54,Omar,2023-01-21
+apple,18,Fruits,3.87,69.66,Rame,2023-01-02
+apple,6,Fruits,6.24,37.44,Omar,2023-01-28
+chips,1,Snacks,4.78,4.78,Rame,2023-01-14
+grape,5,Fruits,10.87,54.35,Rame,2023-01-08
+milk,20,Dairy foods,5.22,104.4,Rame,2023-01-03
+carrot,2,Vegetables,4.21,8.42,Rame,2023-01-06
+orange,2,Fruits,14.67,29.34,Rame,2023-01-29
+spinach,18,Vegetables,18.47,332.46,Omar,2023-01-20
+spinach,5,Vegetables,8.62,43.1,Ali,2023-01-16
+cheese,15,Dairy foods,9.33,139.95,Omar,2023-01-20
+candy,9,Snacks,1.32,11.88,Rame,2023-01-14
+potato,18,Vegetables,13.26,238.68,Omar,2023-01-22
+carrot,14,Vegetables,2.88,40.32,Ali,2023-01-02
+butter,3,Dairy foods,12.57,37.71,Omar,2023-01-17
+yogurt,8,Dairy foods,14.33,114.64,Rame,2023-01-05
+pork,9,Meat and poultry,4.13,37.17,Rame,2023-01-04
+yogurt,13,Dairy foods,18.13,235.69,Rame,2023-01-11
+chicken,12,Meat and poultry,8.89,106.68,Ali,2023-01-03
+apple,9,Fruits,3.61,32.49,Omar,2023-01-03
+cheese,8,Dairy foods,8.75,70,Rame,2023-01-10
+chicken,7,Meat and poultry,14.5,101.5,Rame,2023-01-30
+butter,14,Dairy foods,17.96,251.44,Ali,2023-01-06
+yogurt,4,Dairy foods,15.3,61.2,Ali,2023-01-01
+beef,16,Meat and poultry,5.93,94.88,Ali,2023-01-23
+beef,11,Meat and poultry,14.49,159.39,Rame,2023-01-25
+cheese,12,Dairy foods,3.11,37.32,Ali,2023-01-11
+turkey,16,Meat and poultry,6.72,107.52,Ali,2023-01-14
+candy,11,Snacks,3.02,33.22,Ali,2023-01-20
+chips,13,Snacks,9.97,129.61,Rame,2023-01-02
+cookies,8,Snacks,10.5,84,Omar,2023-01-29
+banana,2,Fruits,13.18,26.36,Rame,2023-01-27
+pork,13,Meat and poultry,12.98,168.74,Rame,2023-01-08
+chicken,6,Meat and poultry,0.82,4.92,Rame,2023-01-01
+cookies,20,Snacks,2.24,44.8,Ali,2023-01-29
+milk,7,Dairy foods,12.18,85.26,Ali,2023-01-16
+cheese,7,Dairy foods,4.47,31.29,Omar,2023-01-17
+milk,1,Dairy foods,19.89,19.89,Rame,2023-01-21
+turkey,12,Meat and poultry,4.47,53.64,Rame,2023-01-19
+broccoli,19,Vegetables,8.25,156.75,Omar,2023-01-29
+potato,7,Vegetables,13.13,91.91,Ali,2023-01-29
+banana,2,Fruits,17.15,34.3,Omar,2023-01-27
+chicken,17,Meat and poultry,3.35,56.95,Omar,2023-01-20
+grape,18,Fruits,14.41,259.38,Rame,2023-01-25
+milk,12,Dairy foods,14.4,172.8,Ali,2023-01-21
+grape,17,Fruits,11.6,197.2,Omar,2023-01-18
+pork,15,Meat and poultry,12.96,194.4,Omar,2023-01-04
+yogurt,15,Dairy foods,10.03,150.45,Rame,2023-01-25
+beef,17,Meat and poultry,14.52,246.84,Rame,2023-01-25
+pork,17,Meat and poultry,6.34,107.78,Rame,2023-01-19
+candy,20,Snacks,7.69,153.8,Rame,2023-01-25
+pork,3,Meat and poultry,12.87,38.61,Ali,2023-01-20
+grape,8,Fruits,3.74,29.92,Ali,2023-01-07
+chips,5,Snacks,19.17,95.85,Ali,2023-01-09
+carrot,16,Vegetables,3.86,61.76,Ali,2023-01-07
+chicken,4,Meat and poultry,18.5,74,Ali,2023-01-12
+spinach,5,Vegetables,4.4,22,Omar,2023-01-02
+candy,1,Snacks,6.29,6.29,Ali,2023-01-19
+chicken,6,Meat and poultry,2.87,17.22,Ali,2023-01-11
+apple,16,Fruits,1.47,23.52,Ali,2023-01-20
+cookies,6,Snacks,7.79,46.74,Ali,2023-01-12
+butter,12,Dairy foods,5.78,69.36,Rame,2023-01-21
+apple,11,Fruits,19.51,214.61,Ali,2023-01-11
+turkey,19,Meat and poultry,0.62,11.78,Omar,2023-01-08
+beef,1,Meat and poultry,8.14,8.14,Omar,2023-01-15
+potato,9,Vegetables,18.16,163.44,Ali,2023-01-21
+butter,8,Dairy foods,10.46,83.68,Omar,2023-01-11
+apple,10,Fruits,16.11,161.1,Omar,2023-01-29
+apple,14,Fruits,8.58,120.12,Rame,2023-01-02
+carrot,8,Vegetables,9.97,79.76,Ali,2023-01-13
+chicken,17,Meat and poultry,4.44,75.48,Omar,2023-01-30
+apple,3,Fruits,5.47,16.41,Ali,2023-01-17
+butter,3,Dairy foods,0.7,2.1,Rame,2023-01-13
+orange,11,Fruits,4.02,44.22,Omar,2023-01-18
+pork,15,Meat and poultry,15.39,230.85,Omar,2023-01-18
+cheese,20,Dairy foods,9.76,195.2,Omar,2023-01-22
+banana,5,Fruits,4.49,22.45,Ali,2023-01-04
+carrot,3,Vegetables,14.88,44.64,Rame,2023-01-08
+banana,19,Fruits,0.51,9.69,Ali,2023-01-18
+cheese,20,Dairy foods,1.8,36,Ali,2023-01-27
+chips,18,Snacks,11.68,210.24,Omar,2023-01-17
+apple,4,Fruits,16.66,66.64,Omar,2023-01-08
+banana,3,Fruits,14.79,44.37,Omar,2023-01-21
+apple,1,Fruits,7.76,7.76,Rame,2023-01-23
+chicken,4,Meat and poultry,5.05,20.2,Ali,2023-01-08
+broccoli,20,Vegetables,10.35,207,Rame,2023-01-12
+spinach,1,Vegetables,3.83,3.83,Rame,2023-01-17
+potato,16,Vegetables,13,208,Ali,2023-01-15
+milk,16,Dairy foods,7.16,114.56,Rame,2023-01-12
+yogurt,10,Dairy foods,3.96,39.6,Rame,2023-01-09
+candy,18,Snacks,18.24,328.32,Ali,2023-01-03
+grape,9,Fruits,7.55,67.95,Rame,2023-01-02
+turkey,2,Meat and poultry,12.29,24.58,Rame,2023-01-29
+milk,18,Dairy foods,7.8,140.4,Ali,2023-01-26
+pork,18,Meat and poultry,17.06,307.08,Rame,2023-01-11
+chocolate,14,Snacks,16.69,233.66,Rame,2023-01-29
+beef,16,Meat and poultry,2.65,42.4,Rame,2023-01-21
+potato,5,Vegetables,12.14,60.7,Omar,2023-01-15
+candy,16,Snacks,5.52,88.32,Rame,2023-01-15
+apple,16,Fruits,7.17,114.72,Omar,2023-01-03
+yogurt,18,Dairy foods,18.1,325.8,Rame,2023-01-03
+banana,11,Fruits,9.86,108.46,Ali,2023-01-19
+butter,1,Dairy foods,4.36,4.36,Omar,2023-01-17
+butter,7,Dairy foods,7.56,52.92,Ali,2023-01-07
+yogurt,7,Dairy foods,10.79,75.53,Ali,2023-01-29
+carrot,17,Vegetables,10.2,173.4,Omar,2023-01-24
+carrot,10,Vegetables,18.87,188.7,Rame,2023-01-04
+butter,1,Dairy foods,3.77,3.77,Rame,2023-01-28
+chicken,13,Meat and poultry,3.1,40.3,Ali,2023-01-30
+beef,17,Meat and poultry,3.4,57.8,Rame,2023-01-30
+butter,13,Dairy foods,10.74,139.62,Omar,2023-01-02
+chocolate,1,Snacks,9.86,9.86,Rame,2023-01-23
+candy,7,Snacks,16.55,115.85,Omar,2023-01-17
+broccoli,17,Vegetables,4.49,76.33,Omar,2023-01-22
+apple,1,Fruits,9.05,9.05,Ali,2023-01-30
+orange,10,Fruits,18.87,188.7,Omar,2023-01-21
+chips,5,Snacks,15.95,79.75,Ali,2023-01-26
+turkey,12,Meat and poultry,18.89,226.68,Rame,2023-01-27
+cookies,16,Snacks,8.68,138.88,Omar,2023-01-26
+apple,16,Fruits,10.6,169.6,Rame,2023-01-13
+chocolate,8,Snacks,13.06,104.48,Omar,2023-01-07
+beef,12,Meat and poultry,9.18,110.16,Rame,2023-01-12
+cheese,20,Dairy foods,3.12,62.4,Rame,2023-01-27
+milk,14,Dairy foods,0.66,9.24,Rame,2023-01-05
+chicken,4,Meat and poultry,8.88,35.52,Rame,2023-01-16
+spinach,6,Vegetables,9.67,58.02,Ali,2023-01-07
+apple,20,Fruits,1.54,30.8,Omar,2023-01-18
+apple,8,Fruits,11.66,93.28,Ali,2023-01-26
+cheese,18,Dairy foods,13.16,236.88,Omar,2023-01-27
+pork,17,Meat and poultry,13.91,236.47,Omar,2023-01-08
+chicken,6,Meat and poultry,13.46,80.76,Rame,2023-01-28
+chocolate,7,Snacks,12.56,87.92,Rame,2023-01-18
+banana,18,Fruits,5.5,99,Omar,2023-01-11
+pork,7,Meat and poultry,5.38,37.66,Rame,2023-01-22
+chips,20,Snacks,4.38,87.6,Rame,2023-01-15
+turkey,20,Meat and poultry,6.71,134.2,Rame,2023-01-12
+orange,1,Fruits,12.56,12.56,Rame,2023-01-22
+cookies,11,Snacks,14.69,161.59,Rame,2023-01-08
+apple,13,Fruits,15.67,203.71,Ali,2023-01-10
+candy,12,Snacks,14.45,173.4,Omar,2023-01-14
+orange,14,Fruits,16.67,233.38,Rame,2023-01-08
+grape,14,Fruits,13.88,194.32,Rame,2023-01-13
+grape,11,Fruits,8.51,93.61,Ali,2023-01-18
+spinach,2,Vegetables,19.54,39.08,Ali,2023-01-23
+grape,11,Fruits,5.3,58.3,Rame,2023-01-24
+beef,12,Meat and poultry,14.45,173.4,Rame,2023-01-25
+cookies,1,Snacks,11.29,11.29,Ali,2023-01-23
+yogurt,9,Dairy foods,17.34,156.06,Ali,2023-01-21
+cheese,2,Dairy foods,5.74,11.48,Omar,2023-01-08
+orange,15,Fruits,13.83,207.45,Ali,2023-01-13
+orange,3,Fruits,7.61,22.83,Ali,2023-01-15
+banana,15,Fruits,11.01,165.15,Rame,2023-01-03
+banana,19,Fruits,19.4,368.6,Omar,2023-01-16
+banana,13,Fruits,13.96,181.48,Rame,2023-01-14
+chips,7,Snacks,19.66,137.62,Rame,2023-01-25
+turkey,19,Meat and poultry,8.83,167.77,Rame,2023-01-30
+pork,9,Meat and poultry,14.5,130.5,Omar,2023-01-17
+carrot,16,Vegetables,14.63,234.08,Ali,2023-01-10
+apple,12,Fruits,19.31,231.72,Rame,2023-01-02
+beef,7,Meat and poultry,11.99,83.93,Omar,2023-01-28
+candy,11,Snacks,14.15,155.65,Ali,2023-01-28
+apple,12,Fruits,14.49,173.88,Ali,2023-01-08
+banana,8,Fruits,9.61,76.88,Ali,2023-01-21
+chocolate,15,Snacks,7.37,110.55,Rame,2023-01-03
+turkey,16,Meat and poultry,4.68,74.88,Omar,2023-01-05
+pork,13,Meat and poultry,6.76,87.88,Omar,2023-01-07
+butter,9,Dairy foods,18.29,164.61,Omar,2023-01-09
+beef,18,Meat and poultry,0.69,12.42,Rame,2023-01-30
+candy,20,Snacks,8.8,176,Rame,2023-01-21
+pork,12,Meat and poultry,9.82,117.84,Omar,2023-01-12
+milk,14,Dairy foods,1.8,25.2,Rame,2023-01-23
+turkey,1,Meat and poultry,13.41,13.41,Rame,2023-01-28
+potato,14,Vegetables,13.43,188.02,Rame,2023-01-29
+broccoli,16,Vegetables,17.3,276.8,Ali,2023-01-02
+chocolate,3,Snacks,10.6,31.8,Ali,2023-01-12
+banana,2,Fruits,6.92,13.84,Ali,2023-01-04
+candy,14,Snacks,7.85,109.9,Omar,2023-01-11
+yogurt,10,Dairy foods,19.09,190.9,Ali,2023-01-06
+chocolate,2,Snacks,14.7,29.4,Omar,2023-01-20
+candy,15,Snacks,7.86,117.9,Omar,2023-01-12
+chocolate,9,Snacks,16.29,146.61,Ali,2023-01-07
+yogurt,2,Dairy foods,10.19,20.38,Ali,2023-01-08
+potato,7,Vegetables,16.35,114.45,Omar,2023-01-11
+turkey,2,Meat and poultry,10.32,20.64,Rame,2023-01-08
+milk,15,Dairy foods,2.36,35.4,Omar,2023-01-14
+orange,5,Fruits,8.88,44.4,Omar,2023-01-01
+candy,7,Snacks,7.72,54.04,Ali,2023-01-09
+milk,2,Dairy foods,9.86,19.72,Ali,2023-01-13
+spinach,6,Vegetables,1.75,10.5,Rame,2023-01-19
+pork,15,Meat and poultry,3.49,52.35,Rame,2023-01-09
+banana,11,Fruits,16.51,181.61,Ali,2023-01-04
+butter,15,Dairy foods,6.75,101.25,Ali,2023-01-03
+cheese,14,Dairy foods,4.36,61.04,Ali,2023-01-29
+milk,12,Dairy foods,15.88,190.56,Omar,2023-01-13
+pork,4,Meat and poultry,1.12,4.48,Rame,2023-01-18
+pork,7,Meat and poultry,3.51,24.57,Omar,2023-01-28
