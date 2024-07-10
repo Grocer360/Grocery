@@ -1,28 +1,8 @@
-ProdName,Quantity,Category,Price,Total,Seller
-Product Name,3,Category,25.99,77.97,user
-spagheti,2,food,1.50,3.00,user
-spagheti,1,food,1.50,1.50,user
-Product Name,1,Category,25.99,25.99,user
-spagheti,3,food,1.50,4.50,YourUsername,2024-07-08 16:03:25.411974
-Product Name,1,Category,25.99,25.99,YourUsername,2024-07-08 16:03:25.412977
-spagheti,1,food,1.50,1.50,YourUsername,2024-07-08 17:18:31.514881
-Product Name,3,Category,25.99,77.97,YourUsername,2024-07-08 17:18:31.514881
-Product Name,4,Category,25.99,103.96,YourUsername,2024-07-08 17:38:27.249263
-spagheti,2,food,1.50,3.00,YourUsername,2024-07-08 17:38:27.249263
-spagheti,1,food,1.50,1.50,abd,2024-07-08 17:56:29.785162
-soud,1,animal,0.00,0.00,abd,2024-07-08 17:56:29.785162
-Product Name,1,Category,25.99,25.99,abd,2024-07-08 17:56:29.785162
-spagheti,3,food,1.50,4.50,abd,2024-07-09 11:08:02.104494
-spagheti,4,food,1.50,6.00,abd,2024-07-09 11:11:58.656279
-soud,1,animal,0.00,0.00,abd,2024-07-09 11:11:58.656279
-spagheti,9,food,1.50,13.50,user,2024-07-09 15:26:04.661178
-tomato,8,vegetables,0.12,0.96,user,2024-07-09 15:26:04.661178
-tomato,2,vegetables,0.12,0.24,user,2024-07-09 15:33:32.962305
-tomato,4,vegetables,0.12,0.48,user,2024-07-09 15:36:31.344389
-tomato,2,vegetables,0.12,0.24,user,2024-07-09 15:36:51.292981
-tomato,1,vegetables,0.12,0.12,user,2024-07-09 15:42:41.413467
-tomato,3,vegetables,0.12,0.36,user,2024-07-09 15:52:13.013134
-tomato,1,vegetables,0.12,0.12,user,2024-07-09 15:55:40.299483
-tomato,1,vegetables,0.12,0.12,user,2024-07-09 15:58:05.673018
-tomato,5,vegetables,0.12,0.60,user,2024-07-09 15:58:56.795150
-tomato,3,vegetables,0.12,0.36,user,2024-07-09 16:01:53.121210
+ProdName,Quantity,Category,Price,Total
+spagheti,1,10,food,1.50,1.50
+spagheti,1,10,food,1.50,1.50
+Total,,,,3.00
+spagheti,1,food,1.50,1.50,YourUsername,2024-07-10 01:34:42.809999
+tomato,1,vegetables,0.12,0.12,YourUsername,2024-07-10 01:36:45.253902
+tomato,3,vegetables,0.12,0.36,YourUsername,2024-07-10 01:37:09.450425
+tomato,2,vegetables,0.12,0.24,YourUsername,2024-07-10 01:37:56.900642

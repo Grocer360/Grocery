@@ -10,7 +10,7 @@ import csv
 import simpleaudio as sa
 from functools import partial
 from datetime import datetime, timedelta, time
-from tkinter import Canvas
+from tkinter import Scrollbar, Canvas
 from PIL import Image, ImageTk
 
 
@@ -94,7 +94,6 @@ def initialize_seller_page(username,top,parent):
             import main_page
             main_page.initialize_login_ui(app)
 
-
     # Function to add product to database
     def add_product_to_db():
         global detected_products
@@ -127,10 +126,10 @@ def initialize_seller_page(username,top,parent):
             cursor.close()
             status_label.configure(text="Product added successfully!")
             bar_code = barcode_entry.get()
-            name.insert(0,"") 
-            quantity.insert(0,"") 
-            category.insert(0,"")
-            price.insert(0,"")
+            name_entry.insert(0,"") 
+            quantity_entry.insert(0,"") 
+            category_entry.insert(0,"")
+            price_entry.insert(0,"")
         except Exception as e:
             status_label.configure(text=f"Database Error: {str(e)}")
 
@@ -177,7 +176,7 @@ def initialize_seller_page(username,top,parent):
         add_product_to_db()
 
     add_product_btn = ctk.CTkButton(main_frame, text="Add Product", fg_color=colors["forest_green"], text_color="white", command=add_product_button_action)
-    add_product_btn.grid(row=10, column=0, pady=10, columnspan=2)
+    add_product_btn.grid(row=8, column=0, pady=10, columnspan=2)
 
     # Create a table for product details
     table_frame = ctk.CTkFrame(main_frame)
@@ -235,43 +234,107 @@ def initialize_seller_page(username,top,parent):
         total_label = ctk.CTkLabel(table_inner_frame, text=f"Total: ${total_receipt:.2f}", width=100, height=25, anchor="w", text_color="white")
         total_label.grid(row=len(detected_products) + 1, column=4, padx=25, pady=25)
 
+    def check_database_quantity(barcode, requested_quantity):
+        """Checks if there is sufficient quantity in the PostgreSQL database."""
+        try:
+            cursor = conn.cursor()
+
+            # Use parameterized query for security
+            query = sql.SQL("SELECT quantity FROM products WHERE bar_code = %s")
+            cursor.execute(query, (barcode,))
+            result = cursor.fetchone()
+
+            if result:
+                current_quantity = result[0]
+                return requested_quantity <= current_quantity
+            else:
+                return False  # Product not found
+        except psycopg2.Error as e:
+            status_label.configure(text=f"Database Error: {str(e)}")
+            return False  # Error handling
+    
     def update_quantity(event, row_index):
         global detected_products
+
         try:
             new_quantity = int(event.widget.get())
+            barcode = detected_products[row_index - 1][0]
+
+            if not check_database_quantity(barcode, new_quantity, row_index):
+                status_label.configure(text="Insufficient stock for this product.")
+                return
+
+            # Update the product tuple
             product = list(detected_products[row_index - 1])
             product[1] = new_quantity
             product[4] = new_quantity * product[3]
             detected_products[row_index - 1] = tuple(product)
-            update_product_table()
+
+            # Update database quantity
+            try:
+                cursor = conn.cursor()
+                update_query = sql.SQL("UPDATE products SET quantity = quantity - %s WHERE bar_code = %s")
+                cursor.execute(update_query, (new_quantity, barcode))
+                conn.commit()
+            except psycopg2.Error as e:
+                status_label.configure(text=f"Database Error: {str(e)}")
+                return  # Don't update table if database update failed
+
+            update_product_table()  # Refresh the table
+
         except ValueError:
             status_label.configure(text="Invalid quantity entered.")
-
     # Function to read data from database based on barcode
     def read_data_base(cursor, barcode):
-        global detected_products
+        global detected_products, low_stock_warnings
+        low_stock_warnings = set()
+
         try:
+            # Execute the query to get product details
             query = "SELECT prod_name, quantity, category, price FROM Products WHERE bar_code = %s;"
             cursor.execute(query, (barcode,))
             product = cursor.fetchone()
-            barcode_entry.delete(0,'end')
-            barcode_entry.insert(0,barcode)
+
+            # Clear and update the barcode entry field
+            barcode_entry.delete(0, 'end')
+            barcode_entry.insert(0, barcode)
+            
             if product:
-                existing_product = next((p for p in detected_products if p[0] == product[0]), None)
+                product_name, quantity, category, price = product
+
+                # Check if stock is low and show a warning if not already shown for this product
+                if quantity <= 10 and product_name not in low_stock_warnings:
+                    messagebox.showinfo("Low Stock", f"{product_name} quantity is less than 10.")
+                    low_stock_warnings.add(product_name)
+
+                existing_product = next((p for p in detected_products if p[0] == product_name), None)
+
                 if existing_product:
-                    detected_products = [
-                        (p[0], p[1] + 1 if p == existing_product else p[1], p[2], p[3], (p[1] + 1) * p[3] if p == existing_product else p[4])
-                        for p in detected_products
-                    ]
+                    # Calculate the new quantity and total price
+                    new_quantity = existing_product[1] + 1
+                    if new_quantity > quantity:
+                        messagebox.showwarning("Insufficient Stock", f"Cannot add more {product_name}. Only {quantity} items available.")
+                    else:
+                        detected_products = [
+                            (p[0], new_quantity if p == existing_product else p[1], p[2], p[3], new_quantity * p[3] if p == existing_product else p[4])
+                            for p in detected_products
+                        ]
                 else:
-                    detected_products.append((product[0], 1, product[2], product[3], product[3]))
+                    if quantity < 1:
+                        messagebox.showwarning("Out of Stock", f"{product_name} is out of stock.")
+                    else:
+                        detected_products.append((product_name, 1, category, price, price))
                 
+                # Update the product table with the latest data
                 update_product_table()
-                
+
             else:
                 status_label.configure(text="Product not found in database.")
         except Exception as e:
             status_label.configure(text=f"Database Error: {str(e)}")
+
+    # Initialize the set to track products that have shown low stock warnings
+
 
     def calculate_total_receipt():
         global detected_products
@@ -330,7 +393,7 @@ def initialize_seller_page(username,top,parent):
 
     # Create a frame for the bottom buttons and place it after the table
     bottom_frame = ctk.CTkFrame(main_frame)
-    bottom_frame.grid(row=13, column=0, columnspan=3, pady=20)
+    bottom_frame.grid(row=10, column=0, columnspan=3, pady=20)
 
     def save_receipt_to_file(products):
         
@@ -369,7 +432,11 @@ def initialize_seller_page(username,top,parent):
         for row in row_widgets.values():
             for widget in row.values():
                 widget.destroy()
+        # temp_quan = 0
+        # for product in detected_products:
+        #     temp_quan = product[1]
 
+        # conn.execute("UPDATE products SET quantity = %s, WHERE barcode = %s", (, current_time, username))
         # Save the receipt to file and show a message
         save_receipt_to_file(detected_products)
         messagebox.showinfo("Info", f"Receipt saved and printed by: {username}:\n{detected_products}")
@@ -387,7 +454,6 @@ def initialize_seller_page(username,top,parent):
         for row in row_widgets.values():
             for widget in row.values():
                 widget.destroy()
-
         # Clear detected products and update the table
         detected_products = []
         row_widgets = {}
@@ -438,4 +504,5 @@ def initialize_seller_page(username,top,parent):
     app.mainloop()
 
 # Example usage:
-# initialize_seller_page("YourUsername")
+if __name__ == "__main__":
+    initialize_seller_page("YourUsername",ctk.CTk(),ctk.CTk())

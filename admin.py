@@ -3,6 +3,7 @@ from psycopg2 import sql
 from psycopg2 import OperationalError
 3
 import ctypes
+import tkinter as tk
 from tkinter import *
 from tkinter import messagebox, ttk
 from PIL import Image, ImageTk
@@ -109,19 +110,16 @@ def modify_product_window(item):
     price_entry.grid(row=1, column=1, padx=20, pady=10)
     price_entry.insert(0, item[2])
     
-
     ctk.CTkLabel(modify_window, text="Quantity:").grid(row=2, column=0, padx=20, pady=10)
     quantity_entry = ctk.CTkEntry(modify_window)
     quantity_entry.grid(row=2, column=1, padx=20, pady=10)
     quantity_entry.insert(0, item[4])
-    
     
     ctk.CTkLabel(modify_window, text="Category:").grid(row=3, column=0, padx=20, pady=10)
     category_entry = ctk.CTkEntry(modify_window)
     category_entry.grid(row=3, column=1, padx=20, pady=10)
     category_entry.insert(0, item[3])
    
-
     def submit():
         prod_name = prod_name_entry.get()
         price = float(price_entry.get())
@@ -204,96 +202,6 @@ def update_product(barCode, prod_name, price, quantity,category):
     except OperationalError as e:
         messagebox.showerror("Database Error", f"An error occurred: {e}")
         log_error(e)
-
-
-
-#-------------------------------------------------------------------------------------------------------------
-
-# Function to add employee 
-def add_employee( user_name, role, working_hours, password):
-    if not validate_employee_input( user_name, role, working_hours, password):
-        return
-
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()  # Hashing the password
-    execute_query("INSERT INTO users ( user_name, role,working_hours, password) VALUES (%s, %s, %s, %s)",
-                  ( user_name, role, working_hours, hashed_password))
-    log_action(f"Employee added: {user_name}")
-    messagebox.showinfo("Success", "Employee added successfully.")
-# Function to validate employee input fields
-def validate_employee_input(user_name, role, working_hours, password):
-    try:
-        # emp_id = int(emp_id)
-        working_hours = (working_hours)
-        if  not user_name or not role  or not password:
-            raise ValueError("Invalid input values.")
-    except ValueError:
-        messagebox.showerror("Error", "Please fill in all fields with valid numeric data")
-        return False
-    return True
-# Function to modify employee details
-def modify_employee_window(item):
-    modify_window = Toplevel()
-    modify_window.title("Modify Employee")
-    modify_window.geometry("400x300")
-
-    ctk.CTkLabel(modify_window, text="User Name:").grid(row=0, column=0, padx=20, pady=10)
-    user_name_entry = ctk.CTkEntry(modify_window)
-    user_name_entry.grid(row=0, column=1, padx=20, pady=10)
-    user_name_entry.insert(0, item[0])
-
-    ctk.CTkLabel(modify_window, text="Role:").grid(row=1, column=0, padx=20, pady=10)
-    role_entry = ctk.CTkEntry(modify_window)
-    role_entry.grid(row=1, column=1, padx=20, pady=10)
-    role_entry.insert(0, item[1])
-
-    ctk.CTkLabel(modify_window, text="Working Hours:").grid(row=2, column=0, padx=20, pady=10)
-    working_hours_entry = ctk.CTkEntry(modify_window)
-    working_hours_entry.grid(row=2, column=1, padx=20, pady=10)
-    working_hours_entry.insert(0, item[2])
-
-    ctk.CTkLabel(modify_window, text="Password:").grid(row=3, column=0, padx=20, pady=10)
-    password_entry = ctk.CTkEntry(modify_window, show="*")
-    password_entry.grid(row=3, column=1, padx=20, pady=10)
-    password_entry.insert(0, item[2])
-
-    def submit():
-        user_name = user_name_entry.get()
-        role = role_entry.get()
-        working_hours = (working_hours_entry.get())
-        password = password_entry.get()
-        update_employee(item[0],user_name, role, working_hours, password)
-        modify_window.destroy()
-
-   
-    ctk.CTkButton(modify_window, text="Update", command=submit).grid(row=4, column=0, columnspan=2, padx=20, pady=20)
-    
-def update_employee( original_user_name,user_name, role, working_hours, password,):
-    if not validate_employee_input( user_name, role, working_hours, password):
-        return
-
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()  # Hashing the password
-
-    try:
-        execute_query("UPDATE users SET user_name=%s, role=%s, working_hours=%s, password=%s WHERE user_name=%s",
-                      (user_name, role, working_hours, hashed_password,original_user_name))
-        log_action(f"Employee updated: {user_name}")
-        messagebox.showinfo("Success", "Employee updated successfully.")
-    except OperationalError as e:
-        messagebox.showerror("Database Error", f"An error occurred: {e}")
-        log_error(e)
-# Function to log actions
-def delete_employee(emp_id):
-    try:
-        execute_query("DELETE FROM users WHERE  user_name=%s", (emp_id,))
-        log_action(f"Employee deleted: {emp_id}")
-        messagebox.showinfo("Success", "Employee deleted successfully.")
-    except OperationalError as e:
-        messagebox.showerror("Database Error", f"An error occurred: {e}")
-        log_error(e)
-def confirm_delete_employee(emp_id, user_name):
-    response = messagebox.askyesno("Confirmation", f"Are you sure you want to delete {user_name}?")
-    if response:
-        delete_employee(emp_id)
 
 def log_action(action):
     logging.info(action)
@@ -406,57 +314,18 @@ class ManegerPage(ctk.CTk):
                 quantity = int(quantity_entry.get())
                 category = category_entry.get()
                 add_product(barCode, prod_name, price, quantity,category)
-            # except ValueError:
-            #     messagebox.showerror("Error", "Please enter valid numeric values for Price and Quantity")
 
         ctk.CTkButton(self.content_frame, text="Add Product", command=submit).grid(row=6, column=0, columnspan=2, padx=20, pady=20)
 
     # Function to display the add employee form
     def show_add_employee(self):
-        self.clear_content_frame()
-        
-        ctk.CTkLabel(self.content_frame, text="Add New Employee", font=("Arial", 24)).grid(row=0, column=0, columnspan=2, padx=20, pady=20)
-        
-        # ctk.CTkLabel(self.content_frame, text="Employee ID:").grid(row=1, column=0, sticky="e", padx=20, pady=5)
-        # emp_id_entry = ctk.CTkEntry(self.content_frame)
-        # emp_id_entry.grid(row=1, column=1, padx=20, pady=5)
-
-        ctk.CTkLabel(self.content_frame, text="User Name:").grid(row=2, column=0, sticky="e", padx=20, pady=5)
-        user_name_entry = ctk.CTkEntry(self.content_frame)
-        user_name_entry.grid(row=2, column=1, padx=20, pady=5)
-
-        ctk.CTkLabel(self.content_frame, text="Role:").grid(row=3, column=0, sticky="e", padx=20, pady=5)
-        role_entry = ctk.CTkEntry(self.content_frame)
-        role_entry.grid(row=3, column=1, padx=20, pady=5)
-
-        ctk.CTkLabel(self.content_frame, text="Working Hours:").grid(row=4, column=0, sticky="e", padx=20, pady=5)
-        working_hours_entry = ctk.CTkEntry(self.content_frame)
-        working_hours_entry.grid(row=4, column=1, padx=20, pady=5)
-
-        ctk.CTkLabel(self.content_frame, text="Password:").grid(row=5, column=0, sticky="e", padx=20, pady=5)
-        password_entry = ctk.CTkEntry(self.content_frame, show="*")
-        password_entry.grid(row=5, column=1, padx=20, pady=5)
-
-        def submit():
-            try:
-                # emp_id = int(emp_id_entry.get())
-                user_name = user_name_entry.get()
-                role = role_entry.get()
-                working_hours = (working_hours_entry.get())
-                password = password_entry.get()
-                add_employee( user_name, role, working_hours, password)
-            except ValueError:
-                messagebox.showerror("Error", "Please enter valid numeric values for Employee ID and Working Hours")
-
-        ctk.CTkButton(self.content_frame, text="Add Employee", command=submit).grid(row=6, column=0, columnspan=2, padx=20, pady=20)
+        from soud.register import RegisterUserApp
+        RegisterUserApp(self)
 
     # Function to display the products list
     def show_view_products(self):
         self.clear_content_frame()
-
         try:
-           
-
             conn = psycopg2.connect(
                 dbname="okzegkwz",
                 user="okzegkwz",
@@ -501,8 +370,6 @@ class ManegerPage(ctk.CTk):
         except Exception as e:
             print(f"An error occurred while fetching products: {e}")
            
-            
-            
         def export():
             export_to_csv(products, "products.csv")
             messagebox.showinfo("Success", "Products exported successfully.")
@@ -536,97 +403,9 @@ class ManegerPage(ctk.CTk):
                 
     # Function to display the employees list
     def show_view_employees(self):
-        self.clear_content_frame()
-        try: 
-            import psycopg2
-            from psycopg2 import OperationalError
-            conn = psycopg2.connect(
-                dbname="okzegkwz",
-                user="okzegkwz",
-                password="7UwFflnPy3byudSr32K1ugHniRSVK6v_",
-                host="kandula.db.elephantsql.com",
-                port="5432"
-            )
-            query = "SELECT user_name, role,working_hours FROM users;"
-            c = conn.cursor()
-            c.execute(query)
-            employees = c.fetchall()
-            conn.close()
-            ctk.CTkLabel(self.content_frame, text="Employees List", font=("Arial", 24)).grid(row=0, column=0, padx=20, pady=20)
-
-            treeview = ttk.Treeview(self.content_frame, columns=( "User Name", "Role", "Working Hours"), show="headings")
-            # treeview.heading("ID", text="ID")
-            treeview.heading("User Name", text="User Name")
-            treeview.heading("Role", text="Role")
-            treeview.heading("Working Hours", text="Working Hours")
-
-            treeview.grid(row=1, column=0, padx=20, pady=20, sticky="nsew")
-            self.content_frame.grid_rowconfigure(1, weight=1)
-            self.content_frame.grid_columnconfigure(0, weight=1)
-
-           
-
-            for employee in employees:
-                treeview.insert("", "end", values=employee)
-                
-        except OperationalError as e:
-            print(f"Database Error: {e}")
-            # Handle the database operational error as needed
-
-        def export():
-            export_to_csv(employees, "employees.csv")
-            messagebox.showinfo("Success", "Employees exported successfully.")
-
-        def delete():
-            selected_item = treeview.selection()
-            if selected_item:
-                item = treeview.item(selected_item)['values']
-                confirm_delete_employee(item[0], item[1])
-                treeview.delete(selected_item)
-            else:
-                messagebox.showwarning("Delete Error", "Please select an employee to delete.")
-
-        def modify():
-            selected_item = treeview.selection()
-            if selected_item:
-                item = treeview.item(selected_item)['values']
-                modify_employee_window(item)
-            else:
-                messagebox.showwarning("Modify Error", "Please select an employee to modify.")
-
-
-        ctk.CTkButton(self.content_frame, text="Delete Employee", command=delete, fg_color='red').grid(row=2, column=0, padx=20, pady=10)
-        ctk.CTkButton(self.content_frame, text="Modify Employee", command=modify).grid(row=3, column=0, padx=20, pady=10)
-        ctk.CTkButton(self.content_frame, text="Export to CSV", command=export).grid(row=4, column=0, padx=20, pady=10)
-
+        from soud.manage import ManageUsersApp
+        ManageUsersApp(self)
     
-    
-    # Function to display the search product interface
-    # def show_search_product(self):
-    #     self.clear_content_frame()
-    #     ctk.CTkLabel(self.content_frame, text="Enter barcode:", font=("Arial", 24)).grid(row=0, column=0, padx=20, pady=20)
-
-    #     search_entry = ctk.CTkEntry(self.content_frame)
-    #     search_entry.grid(row=1, column=0, padx=20, pady=5)
-
-    #     def search():
-    #         bar_code = search_entry.get()
-    #         results = search_product(bar_code)
-    #         for item in treeview.get_children():
-    #             treeview.delete(item)
-    #         for product in results:
-    #             treeview.insert("", "end", values=product)
-
-    #     treeview = ttk.Treeview(self.content_frame, columns=("Barcode", "Name", "Price", "Quantity"), show="headings")
-    #     treeview.heading("Barcode", text="Barcode")
-    #     treeview.heading("Name", text="Name")
-    #     treeview.heading("Price", text="Price")
-    #     treeview.heading("Quantity", text="Quantity")
-    #     treeview.grid(row=2, column=0, padx=20, pady=20, sticky="nsew")
-
-    #     ctk.CTkButton(self.content_frame, text="Search", command=search).grid(row=1, column=1, padx=20, pady=5)
-
-    # Function to clear the content frame
     def clear_content_frame(self):
         for widget in self.content_frame.winfo_children():
             widget.destroy()

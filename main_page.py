@@ -70,7 +70,7 @@ def sign_in():
         root.destroy()
         if role == "user":
             # Import the seller page module
-            import sellerPaeg
+            import sellerpage.sellerPaeg as sellerPaeg
             sellerPaeg.initialize_seller_page(username,ctk.CTk(),ctk.CTk()) # Pass the username
 
         elif role == "admin": 
@@ -85,13 +85,6 @@ def sign_in():
 def openFaceLogin():
     face_recognition_app = FaceRecognitionApp(root)
     face_recognition_app.mainloop()
-    # print("11111111",face_recognition_app.grant_acsses())
-    # if FaceRecognitionApp.grant_acsses:
-    # import sellerPaeg
-
-    # sellerPaeg.initialize_seller_page("abd")
-
-
 
 # Function to show the login UI
 def initialize_login_ui(root):

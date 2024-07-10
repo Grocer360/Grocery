@@ -8,7 +8,7 @@ from datetime import datetime
 import numpy as np
 import psycopg2
 from psycopg2 import sql
-import sellerPaeg
+import sellarpaeg as sellarpaeg
 
 # Configuration
 config = {
@@ -155,7 +155,7 @@ class FaceRecognitionApp(ctk.CTk):
                         # Show a messagebox for successful login
                         messagebox.showinfo("Login Successful", f"Welcome, {username}!")
                         self.grant_acsses(True)
-                        sellerPaeg.initialize_seller_page(username,self.top,self.parent)
+                        sellarpaeg.initialize_seller_page(username,self.top,self.parent)
 
                         # self.parent.destroy()
 
@@ -192,7 +192,7 @@ class FaceRecognitionApp(ctk.CTk):
         self.camera_label.after(10, self.update_camera_feed)  # Refresh the feed every 10ms
 
     if accses:
-        import sellerPaeg
+        import sellarpaeg as sellarpaeg
 if __name__ == "__main__":
     app = FaceRecognitionApp()
     app.mainloop()
