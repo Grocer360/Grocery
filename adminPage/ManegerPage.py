@@ -10,8 +10,10 @@ import logging
 import csv
 import hashlib
 from data_visualisation import DataVisualisation
-from scrollable_frame import ScrollableFrame
-from data_visualisation import DataVisualisation
+from scrollable_frame import ScrollableFrame 
+
+
+
 
 
 # Initialize logging configuration
@@ -328,7 +330,7 @@ class ManegerPage(ctk.CTk):
         self.content_frame = ScrollableFrame(self)
         self.content_frame.grid(row=0, column=2, sticky="nsew", padx=20, pady=90)
 
-        load_BGImg(self, 'assets/AdminBG.png')
+        load_BGImg(self, '../assets/AdminBG.png')
 
         self.btn_add_product = ctk.CTkButton(self.nav_frame, text="Add Product", command=self.show_add_product, width=150, height=50)
         self.btn_add_product.grid(row=0, column=0, padx=20, pady=20)
@@ -369,7 +371,7 @@ class ManegerPage(ctk.CTk):
 
     # Function to enable fullscreen mode and disable resizing
     def fullscreen_and_disable_resize(self):
-        self.overrideredirect(True)
+        self.overrideredirect(False)
         self.state('zoomed')
         self.bind("<Escape>", self.exit_fullscreen)
 
@@ -429,9 +431,7 @@ class ManegerPage(ctk.CTk):
         
         ctk.CTkLabel(self.content_frame.scrollable_frame, text="Add New Employee", font=("Arial", 24)).grid(row=0, column=0, columnspan=2, padx=20, pady=20)
         
-        # ctk.CTkLabel(self.content_frame.scrollable_frame, text="Employee ID:").grid(row=1, column=0, sticky="e", padx=20, pady=5)
-        # emp_id_entry = ctk.CTkEntry(self.content_frame.scrollable_frame)
-        # emp_id_entry.grid(row=1, column=1, padx=20, pady=5)
+    
 
         ctk.CTkLabel(self.content_frame.scrollable_frame, text="User Name:").grid(row=2, column=0, sticky="e", padx=20, pady=5)
         user_name_entry = ctk.CTkEntry(self.content_frame.scrollable_frame)
@@ -612,33 +612,6 @@ class ManegerPage(ctk.CTk):
         ctk.CTkButton(self.content_frame.scrollable_frame, text="Modify Employee", command=modify).grid(row=3, column=0, padx=20, pady=10)
         ctk.CTkButton(self.content_frame.scrollable_frame, text="Export to CSV", command=export).grid(row=4, column=0, padx=20, pady=10)
 
-    
-    
-    # Function to display the search product interface
-    # def show_search_product(self):
-    #     self.clear_content_frame()
-    #     ctk.CTkLabel(self.content_frame.scrollable_frame, text="Enter barcode:", font=("Arial", 24)).grid(row=0, column=0, padx=20, pady=20)
-
-    #     search_entry = ctk.CTkEntry(self.content_frame.scrollable_frame)
-    #     search_entry.grid(row=1, column=0, padx=20, pady=5)
-
-    #     def search():
-    #         bar_code = search_entry.get()
-    #         results = search_product(bar_code)
-    #         for item in treeview.get_children():
-    #             treeview.delete(item)
-    #         for product in results:
-    #             treeview.insert("", "end", values=product)
-
-    #     treeview = ttk.Treeview(self.content_frame.scrollable_frame, columns=("Barcode", "Name", "Price", "Quantity"), show="headings")
-    #     treeview.heading("Barcode", text="Barcode")
-    #     treeview.heading("Name", text="Name")
-    #     treeview.heading("Price", text="Price")
-    #     treeview.heading("Quantity", text="Quantity")
-    #     treeview.grid(row=2, column=0, padx=20, pady=20, sticky="nsew")
-
-    #     ctk.CTkButton(self.content_frame.scrollable_frame, text="Search", command=search).grid(row=1, column=1, padx=20, pady=5)
-
     # Function to clear the content frame
     def clear_content_frame(self):
 
@@ -651,6 +624,7 @@ class ManegerPage(ctk.CTk):
         result = messagebox.askyesno("Logout", "Are you sure you want to logout?")
         if result:
             self.initialize_login_ui()
+            self
 
 def load_BGImg(app, light_image_path):
     try:
