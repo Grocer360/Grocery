@@ -1,3 +1,4 @@
+
 # Grocery Management System
 
 <img src="assets/logo.png" alt="Grocery Management System Logo" width="100" height="50"> 
@@ -130,6 +131,8 @@ We welcome contributions to the Grocery Management System! If you'd like to cont
 ----
 
 ## for the task
+
+>>>>>>> origin/main
 # Grocery
 
 ## wire-frames
