@@ -127,3 +127,30 @@ We welcome contributions to the Grocery Management System! If you'd like to cont
 4. Push to the branch (`git push origin feature/YourFeature`).
 5. Open a Pull Request.
 
+----
+
+## for the task
+# Grocery
+
+## wire-frames
+
+
+## splash-screen
+
+![splash](wireframes/image.png)
+
+## welcomePage
+
+![welcomePage](./wireframes/welcome-wireframe.png)
+
+---
+
+## adminPae
+
+![adminPae](./wireframes/Admin-wireframe.png)
+
+---
+
+## sellerpage
+
+![sellerpage](./wireframes/seller-wireframe.png)
