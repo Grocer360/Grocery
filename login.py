@@ -7,9 +7,6 @@ from PIL import Image, ImageTk
 from datetime import datetime
 import numpy as np
 import psycopg2
-from psycopg2 import sql
-import sellarpaeg as sellarpaeg
-
 # Configuration
 config = {
     "camera_index": 0,
@@ -50,11 +47,12 @@ def log_access(username):
         log_file.write(f"User {username} logged in at {datetime.now()}\n")
 
     # Log to the database
-    log_to_db(username)
-
+    return log_to_db(username)
+global role
 def log_to_db(username):
-    """ Log the access time to the PostgreSQL database. """
+    """ Log the access time to the PostgreSQL database and return the user's role. """
     try:
+        global role
         current_time = datetime.now()
         conn = psycopg2.connect(**conn_details)
         cursor = conn.cursor()
@@ -64,14 +62,19 @@ def log_to_db(username):
             UPDATE Users
             SET logged_in = %s, time_stamp_in = %s
             WHERE user_name = %s
+            RETURNING role
         """, (True, current_time, username))
+        role = cursor.fetchone()[0]
+        print("=======================",role)
         conn.commit()
-        print(f"Login time logged for {username} at {current_time}")
+        print(f"Login time logged for {username} at {current_time} with role {role}")
 
         cursor.close()
         conn.close()
+        return role
     except Exception as e:
         print(f"Error logging login time: {e}")
+        return None
 
 # Capture image from camera
 def capture_image(camera_index):
@@ -91,11 +94,11 @@ def compare_faces(known_encodings, face_encoding):
     return matches[best_match_index], best_match_index
 
 # Main App
+# Main App
+# Main App
 class FaceRecognitionApp(ctk.CTk):
     def __init__(self, parent=None):
         super().__init__()
-
-        # sellerPaeg.initialize_seller_page()
 
         if parent is not None:
             self.parent = parent
@@ -112,7 +115,7 @@ class FaceRecognitionApp(ctk.CTk):
         self.camera_label = ctk.CTkLabel(self.top, text="")
         self.camera_label.pack(pady=20)
 
-        self.capture_button = ctk.CTkButton(self.top, text="Capture Image", command=self.on_capture)
+        self.capture_button = ctk.CTkButton(self.top, text="Sign In", command=self.on_capture)
         self.capture_button.pack(pady=20)
 
         self.result_label = ctk.CTkLabel(self.top, text="")
@@ -120,57 +123,71 @@ class FaceRecognitionApp(ctk.CTk):
 
         self.cap = cv2.VideoCapture(0)  # Change 0 to your camera index if needed
         self.update_camera_feed()
-    global accses 
-    accses = False
-    def grant_acsses(self,acsses):
-        self.accses = acsses
+
+        # Initialize instance variable for role
+        self.user_role = None
+
+        # Initialize instance variable for image reference
+        self.imgtk = None
+
+    global access 
+    access = False
+
+    def grant_access(self, access):
+        self.access = access
+
     def on_capture(self):
         try:
             # Capture a frame from the camera
             ret, frame = self.cap.read()
             if ret:
                 print("Frame captured successfully")
-                
+
                 # Convert the frame to RGB
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 print("Converted frame to RGB")
-                
+
                 # Find face locations in the frame
                 face_locations = face_recognition.face_locations(rgb_frame)
                 print(f"Found {len(face_locations)} face(s) in the frame")
-                
+
                 if face_locations:
                     # Get the encoding for the first detected face
                     face_encoding = face_recognition.face_encodings(rgb_frame, face_locations)[0]
                     print("Face encoding generated")
-                    
+
                     # Compare the detected face with known faces
                     match, index = compare_faces(known_encodings, face_encoding)
                     if match:
                         username = known_names[index]
-                        log_access(username)
+                        self.user_role = log_access(username)
                         self.result_label.configure(text=f"Welcome {username}!")
-                        print(f"Recognized face as {username}")
-                        
+                        print(f"Recognized face as {username} with role {self.user_role}")
+
                         # Show a messagebox for successful login
                         messagebox.showinfo("Login Successful", f"Welcome, {username}!")
-                        self.grant_acsses(True)
-                        sellarpaeg.initialize_seller_page(username,self.top,self.parent)
+                        self.grant_access(True)
+                        print("-------------------", self.user_role)
+                        self.parent.destroy()
+                        if role == "user":
+                            # Import the seller page module
+                            import sellarpaeg
+                            sellarpaeg.initialize_seller_page(username, ctk.CTk(), ctk.CTk())  # Pass the username
 
-                        # self.parent.destroy()
+                        elif role == "admin":
+                            from ManegerPage import ManegerPage
+                            ManegerPage(username)
 
-                        # self.top.destroy()
-                        # app.destroy()
                     else:
                         self.result_label.configure(text="Face not recognized.")
                         print("Face not recognized")
-                        
+
                         # Show a messagebox for face not recognized
                         messagebox.showwarning("Not Recognized", "Face not recognized.")
                 else:
                     self.result_label.configure(text="No face detected.")
                     print("No face detected in the frame")
-                    
+
                     # Show a messagebox for no face detected
                     messagebox.showwarning("No Face Detected", "No face detected. Please try again.")
             else:
@@ -186,15 +203,13 @@ class FaceRecognitionApp(ctk.CTk):
         if ret:
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             img = Image.fromarray(rgb_frame)
-            imgtk = ImageTk.PhotoImage(image=img)
-            self.camera_label.imgtk = imgtk
-            self.camera_label.configure(image=imgtk)
+            self.imgtk = ImageTk.PhotoImage(image=img)  # Store reference in instance variable
+            self.camera_label.imgtk = self.imgtk  # Update reference in label
+            self.camera_label.configure(image=self.imgtk)
         self.camera_label.after(10, self.update_camera_feed)  # Refresh the feed every 10ms
 
-    if accses:
-        import sellarpaeg as sellarpaeg
 if __name__ == "__main__":
     app = FaceRecognitionApp()
     app.mainloop()
-    
+
 

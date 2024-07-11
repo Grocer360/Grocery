@@ -4,29 +4,35 @@ from psycopg2 import sql
 import cv2
 from pyzbar.pyzbar import decode
 import threading
-
 from tkinter import messagebox
 import csv
-# import simpleaudio as sa
+import simpleaudio as sa
 from functools import partial
 from datetime import datetime, timedelta, time
 from tkinter import Scrollbar, Canvas
 from PIL import Image, ImageTk
 
+def initialize_seller_page(username, top, parent):
 
-def initialize_seller_page(username,top,parent):
+    def exit_fullscreen(event=None):
+        app.overrideredirect(False)
+        app.state('normal')
+        app.geometry("800x600")
+
+    def fullscreen_and_disable_resize(app):
+        app.overrideredirect(True)
+        app.geometry("{0}x{1}+0+0".format(app.winfo_screenwidth(), app.winfo_screenheight()))
+        app.bind("<Escape>", exit_fullscreen)
+
     top.destroy()
     parent.destroy()
-    # Initialize the main window
     app = ctk.CTk()
     app.geometry("800x600")
     app.title(f"Supermarket Management System - Welcome {username}")
-
-    # Set custom colors and styles
+    fullscreen_and_disable_resize(app)
     ctk.set_default_color_theme("dark-blue")
-    ctk.set_appearance_mode("dark")
+    ctk.set_appearance_mode("light")
 
-    # Define colors
     colors = {
         "forest_green": "#228B22",
         "crimson_red": "#DC143C",
@@ -42,7 +48,6 @@ def initialize_seller_page(username,top,parent):
         "graphite_gray": "#4B515D",
     }
 
-    # Database connection setup
     def connect_to_db():
         try:
             conn = psycopg2.connect(
@@ -59,19 +64,34 @@ def initialize_seller_page(username,top,parent):
 
     conn = connect_to_db()
 
-    from datetime import datetime
-
     def log_out():
+        print("Starting logout process for user:", username)
         try:
-            cursor = conn.cursor()
-            current_time = datetime.now()            
+            import logging
+            import datetime
 
+            logging.basicConfig(level=logging.INFO)
+            logging.info("Attempting to log out user: %s", username)
+
+            current_time = datetime.datetime.now()
+            print("Current time:", current_time)
+
+            cursor = conn.cursor()
             # Update time_stamp_out with current_time
-            cursor.execute("""
-                UPDATE users
-                SET logged_in=%s,time_stamp_out = %s
-                WHERE user_name = %s;
-            """, (False,current_time, username))
+            cursor.execute(
+                "UPDATE users SET time_stamp_out = %s, logged_in = %s WHERE user_name = %s;",
+                (current_time, False, username)
+            )
+            print("Executed update for time_stamp_out")
+
+            # Verify if the update worked
+            cursor.execute("SELECT time_stamp_out FROM users WHERE user_name = %s;", (username,))
+            result = cursor.fetchone()
+            print("Result from SELECT:", result)
+            logging.info("Updated time_stamp_out: %s", result)
+
+            if result is None:
+                raise ValueError("Update for time_stamp_out failed. No rows affected.")
 
             # Update working_hours using INTERVAL
             cursor.execute("""
@@ -80,19 +100,36 @@ def initialize_seller_page(username,top,parent):
                 WHERE user_name = %s;
             """, (username,))
             conn.commit()
-            cursor.close()
-
-            messagebox.showinfo("Logout", f"Logged out successfully!")
+            print("Executed update for working_hours")
+            
+            messagebox.showinfo("Logout", "Logged out successfully!")
 
         except Exception as e:
-            conn.rollback()  # Rollback transaction on error to maintain data integrity
-            messagebox.showerror("Logout Error", f"Logout Error: {str(e)}")
+            conn.rollback()  
+            logging.error("Logout Error: %s", str(e))
+            print("Exception occurred:", str(e))
 
         finally:
-            # You might want to destroy the app window after logout
+            if conn:
+                cursor.close()
+                conn.close()
+
+            logging.info("Destroying the current window and redirecting to the login page.")
             app.destroy()
-            import main_page
-            main_page.initialize_login_ui(app)
+
+            from main_page import initialize_login_ui
+            initialize_login_ui(app)
+            global stop_camera
+            stop_camera = True
+            camera_thread.join()  # Ensure the thread finishes
+
+            # Destroy all OpenCV windows
+            cv2.destroyAllWindows()
+            cv2.VideoCapture(0).release()
+            app.destroy()
+               
+
+           
 
     # Function to add product to database
     def add_product_to_db():
@@ -134,7 +171,7 @@ def initialize_seller_page(username,top,parent):
             status_label.configure(text=f"Database Error: {str(e)}")
 
     # Create and place the logo
-    logo_label = ctk.CTkLabel(app, text=f"Welcome {username}", font=("Helvetica", 24, "bold"), text_color="white")
+    logo_label = ctk.CTkLabel(app, text=f"Welcome {username}", font=("Helvetica", 24, "bold"))
     logo_label.grid(row=0, column=0, padx=20, pady=20, sticky="nw")
 
     # Create navigation buttons
@@ -143,21 +180,21 @@ def initialize_seller_page(username,top,parent):
 
     buttons = ["Logout"]
     for i, btn_text in enumerate(buttons):
-        btn = ctk.CTkButton(nav_frame, text=btn_text, width=140, height=40, fg_color=colors["crimson_red"], text_color="white", command=log_out)
+        btn = ctk.CTkButton(nav_frame, text=btn_text, width=140, height=40, fg_color=colors["crimson_red"], command=log_out)
         btn.grid(row=i, column=0, pady=5)
 
     # Create main content frame
     main_frame = ctk.CTkFrame(app, corner_radius=10)
     main_frame.grid(row=1, column=5, rowspan=2, padx=20, pady=20, sticky="nsew")
 
-    status_label = ctk.CTkLabel(main_frame, text="Selling Status", font=("Helvetica", 16), text_color="white")
+    status_label = ctk.CTkLabel(main_frame, text="Selling Status", font=("Helvetica", 16))
     status_label.grid(row=1, column=0, columnspan=2, pady=10)
 
     # Add product labels and entry fields centered within their boxes
     labels_texts = ["Bar Code", "Name", "Category", "Quantity", "Price"]
     entry_widgets = {}
     for i, text in enumerate(labels_texts):
-        label = ctk.CTkLabel(main_frame, text=text, text_color="white")
+        label = ctk.CTkLabel(main_frame, text=text)
         label.grid(row=i+4, column=0, pady=4, padx=(510, 5), sticky="e")
 
         entry = ctk.CTkEntry(main_frame)
@@ -174,8 +211,13 @@ def initialize_seller_page(username,top,parent):
     # Add product button
     def add_product_button_action():
         add_product_to_db()
+        barcode_entry.delete(0,'end')
+        name_entry.delete(0, 'end')
+        quantity_entry.delete(0, 'end')
+        price_entry.delete(0, 'end')
+        category_entry.delete(0, 'end')
 
-    add_product_btn = ctk.CTkButton(main_frame, text="Add Product", fg_color=colors["forest_green"], text_color="white", command=add_product_button_action)
+    add_product_btn = ctk.CTkButton(main_frame, text="Add Product", fg_color=colors["forest_green"], command=add_product_button_action)
     add_product_btn.grid(row=8, column=0, pady=10, columnspan=2)
 
     # Create a table for product details
@@ -191,7 +233,7 @@ def initialize_seller_page(username,top,parent):
 
     columns = ["ProdName", "Quantity", "Category", "Price", "Total"]
     for i, col in enumerate(columns):
-        col_label = ctk.CTkLabel(table_inner_frame, text=col, width=100, height=25, anchor="w", text_color="white")
+        col_label = ctk.CTkLabel(table_inner_frame, text=col, width=100, height=25, anchor="w", )
         col_label.grid(row=0, column=i, padx=5, pady=5)
 
     # List to hold detected products
@@ -200,12 +242,22 @@ def initialize_seller_page(username,top,parent):
     global row_widgets
     row_widgets = {}
     def update_product_table():
-        global detected_products
-
+        global detected_products, total_label
         total_receipt = calculate_total_receipt()
+        
+        # Initialize total_label if it doesn't exist
+        if 'total_label' not in globals():
+            total_label = None
+        
+        if total_label:
+            total_label.destroy()
+            
         if not total_receipt:
-            total_label = ctk.CTkLabel(table_inner_frame, text=f"Total: {0}", width=100, height=25, anchor="w", text_color="white")
+            total_receipt = 0
 
+        total_label = ctk.CTkLabel(table_inner_frame, text=f"Total: ${total_receipt:.2f}", width=100, height=25, anchor="w")
+        total_label.grid(row=len(detected_products) + 1, column=4, padx=25, pady=25)
+        
         for row_index, product in enumerate(detected_products, start=1):
             if row_index not in row_widgets:
                 row_widgets[row_index] = {}
@@ -217,7 +269,7 @@ def initialize_seller_page(username,top,parent):
                         quantity_entry.bind("<Return>", partial(update_quantity, row_index=row_index))
                         row_widgets[row_index][col_index] = quantity_entry
                     else:
-                        data_label = ctk.CTkLabel(table_inner_frame, text=value, width=100, height=25, anchor="w", text_color="white")
+                        data_label = ctk.CTkLabel(table_inner_frame, text=value, width=100, height=25, anchor="w")
                         data_label.grid(row=row_index, column=col_index, padx=25, pady=25)
                         row_widgets[row_index][col_index] = data_label
 
@@ -229,16 +281,11 @@ def initialize_seller_page(username,top,parent):
                         widget.insert(0, value)
                     else:
                         widget.configure(text=value)
-        # if total_label:
-        #     total_label.destroy()
-        total_label = ctk.CTkLabel(table_inner_frame, text=f"Total: ${total_receipt:.2f}", width=100, height=25, anchor="w", text_color="white")
-        total_label.grid(row=len(detected_products) + 1, column=4, padx=25, pady=25)
 
     def check_database_quantity(barcode, requested_quantity):
         """Checks if there is sufficient quantity in the PostgreSQL database."""
         try:
             cursor = conn.cursor()
-
             # Use parameterized query for security
             query = sql.SQL("SELECT quantity FROM products WHERE bar_code = %s")
             cursor.execute(query, (barcode,))
@@ -252,39 +299,53 @@ def initialize_seller_page(username,top,parent):
         except psycopg2.Error as e:
             status_label.configure(text=f"Database Error: {str(e)}")
             return False  # Error handling
-    
+        
     def update_quantity(event, row_index):
         global detected_products
-
         try:
             new_quantity = int(event.widget.get())
-            barcode = detected_products[row_index - 1][0]
+            barcode = barcode_entry.get()
 
-            if not check_database_quantity(barcode, new_quantity, row_index):
+            # Check if the requested quantity is available in the database
+            if not check_database_quantity(barcode, new_quantity):
                 status_label.configure(text="Insufficient stock for this product.")
                 return
 
             # Update the product tuple
             product = list(detected_products[row_index - 1])
+            old_quantity = product[1]
             product[1] = new_quantity
-            product[4] = new_quantity * product[3]
+            product[4] = new_quantity * product[3]  # Update total price based on new quantity
             detected_products[row_index - 1] = tuple(product)
+
+            # Update the UI for quantity and total
+            if row_index in row_widgets and 1 in row_widgets[row_index]:
+                quantity_entry = row_widgets[row_index][1]
+                quantity_entry.delete(0, 'end')
+                quantity_entry.insert(0, new_quantity)
+
+                total_label = row_widgets[row_index][4]
+                total_label.configure(text=f"${product[4]:.2f}")
+            else:
+                status_label.configure(text="Error updating quantity UI.")
+
+            update_product_table()  # Refresh the table
 
             # Update database quantity
             try:
                 cursor = conn.cursor()
                 update_query = sql.SQL("UPDATE products SET quantity = quantity - %s WHERE bar_code = %s")
-                cursor.execute(update_query, (new_quantity, barcode))
+                cursor.execute(update_query, (new_quantity - old_quantity, barcode))
                 conn.commit()
+                cursor.close()
             except psycopg2.Error as e:
                 status_label.configure(text=f"Database Error: {str(e)}")
                 return  # Don't update table if database update failed
 
-            update_product_table()  # Refresh the table
-
         except ValueError:
-            messagebox.showerror("Error", "Invalid quantity entered.")
-    # Function to read data from database based on barcode
+            status_label.configure(text="Invalid quantity entered.")
+
+
     def read_data_base(cursor, barcode):
         global detected_products, low_stock_warnings
         low_stock_warnings = set()
@@ -329,12 +390,10 @@ def initialize_seller_page(username,top,parent):
                 update_product_table()
 
             else:
-                  messagebox.showwarning("Warning", "Product not found in database.")
+                status_label.configure(text="Product not found in database.")
         except Exception as e:
             status_label.configure(text=f"Database Error: {str(e)}")
-
     # Initialize the set to track products that have shown low stock warnings
-
 
     def calculate_total_receipt():
         global detected_products
@@ -353,20 +412,23 @@ def initialize_seller_page(username,top,parent):
     # Function to play beep sound
     def play_beep_sound():
         try:
-            wave_obj = sa.WaveObject.from_wave_file("beeeeb.wav")
+            wave_obj = sa.WaveObject.from_wave_file("./assets/peep.wav")
             play_obj = wave_obj.play()
             play_obj.wait_done()
         except Exception as e:
             status_label.configure(text=f"Sound Error: {str(e)}")
 
+    global stop_camera
+    stop_camera = False
+
     # Function to process barcodes
     def process_barcodes():
         cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(0)
 
-        while True:
+        while not stop_camera:
             ret, frame = cap.read()
             if not ret:
-                status_label.configure(text="Failed to grab frame from camera.")
                 break
 
             barcode_data = barcode_decoder(frame)
@@ -375,7 +437,7 @@ def initialize_seller_page(username,top,parent):
                 status_label.configure(text=f"Detected Barcode: {barcode_data}")
                 cursor = conn.cursor()
                 barcode_entry.insert(0, barcode_data)
-                # barcode_entry.configure(state="disalbled")
+
                 read_data_base(cursor, barcode_data)
                 cv2.waitKey(1000)
 
@@ -432,12 +494,7 @@ def initialize_seller_page(username,top,parent):
         for row in row_widgets.values():
             for widget in row.values():
                 widget.destroy()
-        # temp_quan = 0
-        # for product in detected_products:
-        #     temp_quan = product[1]
 
-        # conn.execute("UPDATE products SET quantity = %s, WHERE barcode = %s", (, current_time, username))
-        # Save the receipt to file and show a message
         save_receipt_to_file(detected_products)
         messagebox.showinfo("Info", f"Receipt saved and printed by: {username}:\n{detected_products}")
 
@@ -458,48 +515,32 @@ def initialize_seller_page(username,top,parent):
         detected_products = []
         row_widgets = {}
         update_product_table()
-
         # Show a message
         messagebox.showinfo("Info", "Order canceled and list cleared")
-
 
     bottom_buttons = ["Cancel", "Print"]
     for btn_text in bottom_buttons:
         color = colors["forest_green"] if btn_text != "Cancel" else colors["crimson_red"]
         btn_command = print_receipt if btn_text != "Cancel" else cancel_order
-        btn = ctk.CTkButton(bottom_frame, text=btn_text, width=80, height=30, fg_color=color, text_color="white", command=btn_command)
-        btn.pack(side="left", padx=5)
-
-
-    def get_user_picture_path(username):
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT img FROM users WHERE user_name = %s", (username,))
-            result = cursor.fetchone()
-            cursor.close()
-            if result and result[0]:
-                return result[0]
-            else:
-                return None
-        except Exception as e:
-            print(f"Error retrieving user picture path: {e}")
-            return None
+        btn = ctk.CTkButton(bottom_frame, text=btn_text, width=80, height=30, fg_color=color, command=btn_command)
+        btn.pack(side='left', padx=5)
 
     # Load and display the user's picture
-    user_picture_path = get_user_picture_path(username)
-    # print("22222222222222",user_picture_path)
-    if user_picture_path:
+    def display_user_image(username, main_frame):
+        user_picture_path = f"./db/Assad.jpg"
         try:
-            # user_image = Image.open("./db/user.jpg")
             user_image = Image.open(user_picture_path)
             user_image = user_image.resize((350, 300), Image.ANTIALIAS)
             user_photo = ImageTk.PhotoImage(user_image)
             user_image_label = ctk.CTkLabel(main_frame, image=user_photo, text="")
             user_image_label.grid(row=0, column=2, padx=40, pady=40)
+            # Keep a reference to the image to prevent it from being garbage collected
+            user_image_label.image = user_photo
+            
         except Exception as e:
             print(f"Error loading user picture: {e}")
-    # Run the application
-    # parent.destroy()
+
+    display_user_image(username,app)
 
     app.mainloop()
 

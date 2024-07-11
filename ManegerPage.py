@@ -317,10 +317,11 @@ def export_to_csv(data, filename):
 class ManegerPage(ctk.CTk):
     def __init__(self, username):
         super().__init__()
+        self.username = username 
 
         self.geometry('1280x720')
-        self.after(10, self.fullscreen_and_disable_resize)
-        self.title(f"Supermarket Management System - Welcome {username}")
+        self.after(1, self.fullscreen_and_disable_resize)
+        self.title(f"Grocery Management System - Welcome {username}")
         self.tkraise()
 
         self.nav_frame = ctk.CTkFrame(self)
@@ -589,51 +590,62 @@ class ManegerPage(ctk.CTk):
     # Function to confirm logout
 
     def confirm_logout(self):
-        try:
-            import datetime
-            import logging
-            logging.info("Attempting to log out user: %s", self.username)
-            cursor = self.conn.cursor()
-            current_time = datetime.datetime.now()
-            logging.info("Current time: %s", current_time)
-
-            # Update time_stamp_out with current_time
-            cursor.execute("""
-                UPDATE users
-                SET time_stamp_out = %s
-                WHERE user_name = %s;
-            """, (current_time, self.username))
-
-            # Verify if the update worked
-            cursor.execute("SELECT time_stamp_out FROM users WHERE user_name = %s;", (self.username,))
-            result = cursor.fetchone()
-            logging.info("Updated time_stamp_out: %s", result)
-
-            # Update working_hours using INTERVAL
-            cursor.execute("""
-                UPDATE users
-                SET working_hours = COALESCE(working_hours, '0'::interval) + (time_stamp_out - time_stamp_in)
-                WHERE user_name = %s;
-            """, (self.username,))
-            self.conn.commit()
-            self.cursor.close()
-            
-            messagebox.showinfo("Logout", "Logged out successfully!")
-
-        except Exception as e:
-            self.conn.rollback()  # Rollback transaction on error to maintain data integrity
-            logging.error("Logout Error: %s", str(e))
-            messagebox.showerror("Logout Error", f"Logout Error: {str(e)}")
-
-        finally:
-            logging.info("Destroying the current window and redirecting to the login page.")
-            self.destroy()
+        
+            print("Starting logout process for user:", username)
             try:
-                import main_page
-                main_page.initialize_login_ui(self)
+                import logging
+                import datetime
+
+                logging.basicConfig(level=logging.INFO)
+                logging.info("Attempting to log out user: %s", self.username)
+
+                current_time = datetime.datetime.now()
+                print("Current time:", current_time)
+
+                cursor = self.conn.cursor()
+                # Update time_stamp_out with current_time
+                cursor.execute(
+                    "UPDATE users SET time_stamp_out = %s, logged_in = %s WHERE user_name = %s;",
+                    (current_time, False, self.username)
+                )
+                print("Executed update for time_stamp_out")
+
+                # Verify if the update worked
+                cursor.execute("SELECT time_stamp_out FROM users WHERE user_name = %s;", (self.username,))
+                result = cursor.fetchone()
+                print("Result from SELECT:", result)
+                logging.info("Updated time_stamp_out: %s", result)
+
+                if result is None:
+                    raise ValueError("Update for time_stamp_out failed. No rows affected.")
+
+                # Update working_hours using INTERVAL
+                cursor.execute("""
+                    UPDATE users
+                    SET working_hours = COALESCE(working_hours, '0'::interval) + (time_stamp_out - time_stamp_in)
+                    WHERE user_name = %s;
+                """, (self.username,))
+                self.conn.commit()
+                print("Executed update for working_hours")
+                
+                messagebox.showinfo("Logout", "Logged out successfully!")
+
             except Exception as e:
-                logging.error("Redirection Error: %s", str(e))
-                messagebox.showerror("Redirection Error", f"Redirection Error: {str(e)}")
+                self.conn.rollback()  
+                logging.error("Logout Error: %s", str(e))
+                print("Exception occurred:", str(e))
+
+            finally:
+                if self.conn:
+                    self.cursor.close()
+                    self.conn.close()
+
+                logging.info("Destroying the current window and redirecting to the login page.")
+                self.destroy()
+
+       
+
+
 
             
 def load_BGImg(app, light_image_path):

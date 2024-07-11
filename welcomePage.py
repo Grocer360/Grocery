@@ -20,8 +20,8 @@ w.overrideredirect(1) #for hiding titlebar
 
 #new window to open
 def new_win():
-    
     from main_page import initialize_login_ui
+    
     initialize_login_ui(w)
    
 
