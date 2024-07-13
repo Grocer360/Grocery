@@ -2,6 +2,7 @@ import tkinter as tk
 import customtkinter as ctk
 ctk.set_appearance_mode("dark")
 import cv2
+import face_recognition
 from PIL import Image, ImageTk
 import os
 import psycopg2
@@ -106,10 +107,18 @@ class RegisterUserApp:
             util.msg_box("Error", "Please enter a username before capturing the image.")
             return
 
-        faces = self.detect_face(self.most_recent_capture_arr)
-        if len(faces) == 0:
+        # Convert the frame to RGB
+        rgb_frame = cv2.cvtColor(self.most_recent_capture_arr, cv2.COLOR_BGR2RGB)
+
+        # Detect faces in the image
+        face_locations = face_recognition.face_locations(rgb_frame)
+        if len(face_locations) == 0:
             util.msg_box("Error", "No faces detected. Please try again.")
             return
+
+        # Draw green rectangles around detected faces
+        for (top, right, bottom, left) in face_locations:
+            cv2.rectangle(self.most_recent_capture_arr, (left, top), (right, bottom), (0, 255, 0), 2)
 
         user_img_dir = os.path.join(self.db_dir)
         if not os.path.exists(user_img_dir):
@@ -117,7 +126,7 @@ class RegisterUserApp:
 
         img_path = os.path.join(user_img_dir, f"{username}.jpg")
         cv2.imwrite(img_path, self.most_recent_capture_arr)
-        util.msg_box("Info", "successfully captured")
+        util.msg_box("Info", "Successfully captured")
 
         self.captured_image_displayed = True
         img_rgb = cv2.cvtColor(self.most_recent_capture_arr, cv2.COLOR_BGR2RGB)
@@ -126,7 +135,6 @@ class RegisterUserApp:
         self.webcam_label.imgtk = imgtk
         self.webcam_label.configure(image=imgtk)
 
-        username = self.username_entry.get()
         password = self.password_entry.get()
         role = self.role_var.get()
 
@@ -146,6 +154,9 @@ class RegisterUserApp:
         if not self.is_unique_username(username):
             util.msg_box("Error", "Username already exists. Please choose a different one.")
             return
+
+
+
 
     def detect_face(self, frame):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)

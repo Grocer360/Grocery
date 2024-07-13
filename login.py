@@ -202,10 +202,21 @@ class FaceRecognitionApp(ctk.CTk):
         ret, frame = self.cap.read()
         if ret:
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            
+            # Find face locations in the frame
+            face_locations = face_recognition.face_locations(rgb_frame)
+
+            # Draw green rectangles around each face
+            for (top, right, bottom, left) in face_locations:
+                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+
+            # Convert the frame back to RGB for displaying
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             img = Image.fromarray(rgb_frame)
-            self.imgtk = ImageTk.PhotoImage(image=img)  # Store reference in instance variable
-            self.camera_label.imgtk = self.imgtk  # Update reference in label
-            self.camera_label.configure(image=self.imgtk)
+            imgtk = ImageTk.PhotoImage(image=img)
+            self.camera_label.imgtk = imgtk
+            self.camera_label.configure(image=imgtk)
+
         self.camera_label.after(10, self.update_camera_feed)  # Refresh the feed every 10ms
 
 if __name__ == "__main__":
